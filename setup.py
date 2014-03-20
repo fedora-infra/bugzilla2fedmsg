@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='bugzilla2fedmsg',
-    version='0.1.0',
+    version='0.1.1',
     description='Consume BZ messages over STOMP and republish to fedmsg',
     author='Ralph Bean',
     author_email='rbean@redhat.com',
@@ -10,9 +10,11 @@ setup(
     install_requires=[
         "fedmsg",
         "python-bugzilla",
+        "moksha.hub",
         "stomper",
     ],
     packages=[],
+    py_modules=['bugzilla2fedmsg'],
     entry_points="""
     [moksha.consumer]
     bugzilla2fedmsg = bugzilla2fedmsg:BugzillaConsumer
