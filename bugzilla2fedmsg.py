@@ -84,57 +84,19 @@ def convert_datetimes(obj):
 
 class BugzillaConsumer(moksha.hub.api.Consumer):
 
-    # This is /topic/bugzilla in STOMP land.
-    topic = '/topic/bugzilla'
+    # This is /topic/com.redhat.bugzilla in STOMP land.
+    topic = '/topic/com.redhat.bugzilla'
 
     def __init__(self, hub):
         super(BugzillaConsumer, self).__init__(hub)
 
-        # Set up a queue to communicate between the main twisted thread
-        # receiving stomp messages, and a worker thread that pulls items off
-        # the queue, makes bz queries, and republishes to fedmsg.
-        self.incoming = queue.Queue()
+        self.config = config = hub.config
 
-        # Last thing we do is kick off our worker(s) in a background thread.
-        N = int(self.hub.config.get('bugzilla.num_workers', 1))
-        self.workers = []
-        for i in range(N):
-            # Share our queue, log and config with our workers
-            worker = WorkerThread(i, self.incoming, self.log, self.hub.config)
-            moksha.hub.reactor.reactor.callInThread(worker.work)
-            self.workers.append(worker)
-
-        self.log.info("Initialized bz2fm STOMP consumer with %i workers." % N)
-
-    def consume(self, msg):
-        """ Receive a STOMP message and put it on the queue for the worker """
-        self.log.info("Main thread received %r.  Queueing." % msg)
-        self.incoming.put(msg)
-
-    def stop(self):
-        # Drop N quit signals in the queue, one for each worker.
-        for worker in self.workers:
-            self.incoming.put(StopIteration)
-
-
-class WorkerThread(object):
-    def __init__(self, idx, incoming, log, config):
-        self.idx = idx
-        self.incoming = incoming
-        self.log = log
-        self.config = config
+        # Backwards compat.  We used to have a self.debug...
+        self.debug = self.log.info
 
         products = config.get('bugzilla.products', 'Fedora, Fedora EPEL')
         self.products = [product.strip() for product in products.split(',')]
-
-    def debug(self, msg):
-        self.log.info("* thread #%i (backlog %i): %s" % (
-            self.idx, self.incoming.qsize(), msg))
-
-    def work(self):
-        """ A worker thread that pulls stuff off the main thread's queue. """
-
-        self.debug("Starting bz2fm worker.")
 
         # First, initialize fedmsg and bugzilla in this thread's context.
         hostname = socket.gethostname().split('.', 1)[0]
@@ -151,35 +113,18 @@ class WorkerThread(object):
         else:
             self.debug("No credentials found.  Not logging in to %s" % url)
 
-        # Then, start working, forever.
-        self.debug("bz2fm worker thread waiting on incoming queue.")
-        while True:
-            # This is a blocking call.  It waits until a msg is available.
-            msg = self.incoming.get()
+        self.debug("Initialized bz2fm STOMP consumer.")
 
-            # Then we are being asked to quit
-            if msg is StopIteration:
-                break
+    def consume(self, msg):
+        topic, msg = msg['topic'], msg['body']
 
-            topic, msg = msg['topic'], msg['body']
-            self.debug("Worker thread picking up %r" % msg)
-            try:
-                self.handle(topic, msg)
-            except Exception as e:
-                self.log.exception(e)
-            self.debug("Going back to waiting on the incoming queue.")
-
-        self.debug("Thread exiting.")
-
-    def handle(self, topic, msg):
         # First, look up our bug in bugzilla.
         self.debug("Gathering metadata for #%s" % msg['bug_id'])
         bug = self.bugzilla.getbug(msg['bug_id'])
 
         # Drop it if we don't care about it.
         if bug.product not in self.products:
-            self.debug("DROP: %r not in %r" % (
-                bug.product, self.products))
+            self.debug("DROP: %r not in %r" % (bug.product, self.products))
             return
 
         # Parse the timestamp in msg.  It looks like 2013-05-17T02:33:00
@@ -190,16 +135,18 @@ class WorkerThread(object):
         self.debug("Gathering history for #%s" % msg['bug_id'])
         history = bug.get_history()['bugs'][0]['history']
         history = convert_datetimes(history)
-        event = self.find_relevant_event(msg, history)
-
-        # If there are no events in the history, then this is a new bug.
-        topic = 'bug.update'
-        if not event:
-            topic = 'bug.new'
 
         self.debug("Organizing metadata for #%s" % msg['bug_id'])
         bug = dict([(attr, getattr(bug, attr, None)) for attr in bug_fields])
         bug = convert_datetimes(bug)
+
+        comment = self.find_relevant_item(msg, bug['comments'], 'time')
+        event = self.find_relevant_item(msg, history, 'when')
+
+        # If there are no events in the history, then this is a new bug.
+        topic = 'bug.update'
+        if not event and len(bug['comments']) == 1:
+            topic = 'bug.new'
 
         self.debug("Republishing #%s" % msg['bug_id'])
         fedmsg.publish(
@@ -208,25 +155,30 @@ class WorkerThread(object):
             msg=dict(
                 bug=bug,
                 event=event,
+                comment=comment,
             ),
         )
 
     @staticmethod
-    def find_relevant_event(msg, history):
+    def find_relevant_item(msg, history, key):
         """ Find the change from the BZ history with the closest timestamp to a
         given message.  Unfortunately, we can't rely on matching the timestamps
-        exactly.
+        exactly so instead we say that if the best match is within 60s of the
+        message, then return it.  Otherwise return None.
         """
 
         if not history:
-            return {}
+            return None
 
         best = history[0]
-        best_delta = abs(best['when'] - msg['timestamp'])
+        best_delta = abs(best[key] - msg['timestamp'])
 
         for event in history[1:]:
-            if abs(event['when'] - msg['timestamp']) < best_delta:
+            if abs(event[key] - msg['timestamp']) < best_delta:
                 best = event
-                best_delta = abs(best['when'] - msg['timestamp'])
+                best_delta = abs(best[key] - msg['timestamp'])
 
-        return best
+        if best_delta < datetime.timedelta(seconds=60):
+            return best
+        else:
+            return None
