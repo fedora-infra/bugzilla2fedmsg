@@ -11,6 +11,7 @@ import socket
 import time
 
 import bugzilla
+import dateutil
 import fedmsg
 import moksha.hub.api
 import moksha.hub.reactor
@@ -127,9 +128,9 @@ class BugzillaConsumer(moksha.hub.api.Consumer):
             self.debug("DROP: %r not in %r" % (bug.product, self.products))
             return
 
-        # Parse the timestamp in msg.  It looks like 2013-05-17T02:33:00
-        fmt = '%Y-%m-%dT%H:%M:%S'
-        msg['timestamp'] = datetime.datetime.strptime(msg['timestamp'], fmt)
+        # Parse the timestamp in msg.  It looks like 2013-05-17T02:33:00+00:00
+        # Format changed https://bugzilla.redhat.com/show_bug.cgi?id=1139955
+        msg['timestamp'] = dateutil.parser.parse(msg['timestamp'])
 
         # Find the event from the bz history that most likely corresponds here.
         self.debug("Gathering history for #%s" % msg['bug_id'])
