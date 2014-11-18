@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.2.1
+-----
+
+- Handle timezones. `ff44f64b5 <https://github.com/fedora-infra/bugzilla2fedmsg/commit/ff44f64b5152f56277a4e498dbf6426aa16b51e6>`_
+- Merge pull request #4 from fedora-infra/feature/timezones `88581d44a <https://github.com/fedora-infra/bugzilla2fedmsg/commit/88581d44a662c1532d47f0cf87299afbb1ceef47>`_
+
 0.2.0
 -----
 
