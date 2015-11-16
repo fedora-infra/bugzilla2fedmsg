@@ -118,14 +118,20 @@ class BugzillaConsumer(moksha.hub.api.Consumer):
     def consume(self, msg):
         topic, msg = msg['topic'], msg['body']
 
-        # First, look up our bug in bugzilla.
+        # As of https://bugzilla.redhat.com/show_bug.cgi?id=1248259, bugzilla
+        # will send the product along with the initial message, so let's check
+        # it.
+        if not 'product' in msg:
+            self.debug("DROP: message does not bear a 'product' field.")
+            return
+
+        if msg['product'] not in self.products:
+            self.debug("DROP: %r not in %r" % (msg['product'], self.products))
+            return
+
+        # Now, look up our bug in bugzilla to get more details.
         self.debug("Gathering metadata for #%s" % msg['bug_id'])
         bug = self.bugzilla.getbug(msg['bug_id'])
-
-        # Drop it if we don't care about it.
-        if bug.product not in self.products:
-            self.debug("DROP: %r not in %r" % (bug.product, self.products))
-            return
 
         # Parse the timestamp in msg.  It looks like 2013-05-17T02:33:00+00:00
         # Format changed https://bugzilla.redhat.com/show_bug.cgi?id=1139955
