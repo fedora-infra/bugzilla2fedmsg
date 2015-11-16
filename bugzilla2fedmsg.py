@@ -6,7 +6,6 @@ Authors:    Ralph Bean <rbean@redhat.com>
 """
 
 import datetime
-import Queue as queue  # stdlib
 import socket
 import time
 
