@@ -1,3 +1,22 @@
+
+0.3.0
+-----
+
+Pull Requests
+
+- (@ralphbean)      #5, Look before you leap.
+  https://github.com/fedora-infra/bugzilla2fedmsg/pull/5
+- (@ralphbean)      #6, Got moved again.
+  https://github.com/fedora-infra/bugzilla2fedmsg/pull/6
+
+Commits
+
+- 8c0080ec9 Remove unused import.
+  https://github.com/fedora-infra/bugzilla2fedmsg/commit/8c0080ec9
+- 9ede5ffab Look before you leap.
+  https://github.com/fedora-infra/bugzilla2fedmsg/commit/9ede5ffab
+- 1863f1959 Got moved again.
+  https://github.com/fedora-infra/bugzilla2fedmsg/commit/1863f1959
 Changelog
 =========
 
