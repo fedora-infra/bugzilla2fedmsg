@@ -135,7 +135,8 @@ class BugzillaConsumer(moksha.hub.api.Consumer):
 
         # Parse the timestamp in msg.  It looks like 2013-05-17T02:33:00+00:00
         # Format changed https://bugzilla.redhat.com/show_bug.cgi?id=1139955
-        msg['timestamp'] = dateutil.parser.parse(msg['timestamp'])
+        timezone_naive_timestamp = msg['timestamp'].rsplit('+')[0]
+        msg['timestamp'] = dateutil.parser.parse(timezone_naive_timestamp)
 
         # Find the event from the bz history that most likely corresponds here.
         self.debug("Gathering history for #%s" % msg['bug_id'])
