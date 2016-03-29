@@ -19,7 +19,7 @@ import moksha.hub.reactor
 bug_fields = [
     'alias',
     'assigned_to',
-    'attachments',
+    #'attachments',  # These can contain binary things we don't want to send.
     'blocks',
     'cc',
     'classification',
