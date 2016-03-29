@@ -100,7 +100,7 @@ class BugzillaConsumer(moksha.hub.api.Consumer):
 
         # First, initialize fedmsg and bugzilla in this thread's context.
         hostname = socket.gethostname().split('.', 1)[0]
-        fedmsg.init(name='bugzilla.%s' % hostname)
+        fedmsg.init(name='bugzilla2fedmsg.%s' % hostname)
 
         url = self.config.get('bugzilla.url', 'https://bugzilla.redhat.com')
         username = self.config.get('bugzilla.username', None)
