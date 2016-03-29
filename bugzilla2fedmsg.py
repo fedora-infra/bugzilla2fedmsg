@@ -10,7 +10,7 @@ import socket
 import time
 
 import bugzilla
-import dateutil
+import dateutil.parser
 import fedmsg
 import moksha.hub.api
 import moksha.hub.reactor
