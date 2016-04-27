@@ -116,6 +116,7 @@ class BugzillaConsumer(moksha.hub.api.Consumer):
         self.debug("Initialized bz2fm STOMP consumer.")
 
     def consume(self, msg):
+        headers = msg.get('headers', {})  # https://github.com/mokshaproject/moksha/pull/35
         topic, msg = msg['topic'], msg['body']
 
         # As of https://bugzilla.redhat.com/show_bug.cgi?id=1248259, bugzilla
@@ -163,6 +164,7 @@ class BugzillaConsumer(moksha.hub.api.Consumer):
                 bug=bug,
                 event=event,
                 comment=comment,
+                headers=headers,
             ),
         )
 
