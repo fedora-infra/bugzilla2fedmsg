@@ -6,12 +6,13 @@ Authors:    Ralph Bean <rbean@redhat.com>
 """
 
 import datetime
+import pytz
 import socket
 import time
 
-import bugzilla
-import dateutil.parser
 import fedmsg
+import fedmsg.config
+import fedmsg.meta
 import moksha.hub.api
 import moksha.hub.reactor
 
@@ -19,7 +20,7 @@ import moksha.hub.reactor
 bug_fields = [
     'alias',
     'assigned_to',
-    #'attachments',  # These can contain binary things we don't want to send.
+    # 'attachments',  # These can contain binary things we don't want to send.
     'blocks',
     'cc',
     'classification',
@@ -77,20 +78,18 @@ def convert_datetimes(obj):
         ])
     elif hasattr(obj, 'timetuple'):
         timestamp = time.mktime(obj.timetuple())
-        return datetime.datetime.fromtimestamp(timestamp)
+        return datetime.datetime.fromtimestamp(timestamp, pytz.UTC)
     else:
         return obj
 
 
 class BugzillaConsumer(moksha.hub.api.Consumer):
 
-    # This is the fedora_from_esb A-MQ queue.
-    topic = '/queue/fedora_from_esb'
-
     def __init__(self, hub):
-        super(BugzillaConsumer, self).__init__(hub)
-
         self.config = config = hub.config
+        self.topic = config['stomp_queue']
+
+        super(BugzillaConsumer, self).__init__(hub)
 
         # Backwards compat.  We used to have a self.debug...
         self.debug = self.log.info
@@ -102,61 +101,52 @@ class BugzillaConsumer(moksha.hub.api.Consumer):
         hostname = socket.gethostname().split('.', 1)[0]
         fedmsg.init(name='bugzilla2fedmsg.%s' % hostname)
 
-        url = self.config.get('bugzilla.url', 'https://bugzilla.redhat.com')
-        username = self.config.get('bugzilla.username', None)
-        password = self.config.get('bugzilla.password', None)
-
-        self.bugzilla = bugzilla.Bugzilla(url=url)
-        if username and password:
-            self.debug("Logging in to %s" % url)
-            self.bugzilla.login(username, password)
-        else:
-            self.debug("No credentials found.  Not logging in to %s" % url)
-
         self.debug("Initialized bz2fm STOMP consumer.")
 
     def consume(self, msg):
-        headers = msg.get('headers', {})  # https://github.com/mokshaproject/moksha/pull/35
-        topic, msg = msg['topic'], msg['body']
+        topic, msg, headers = msg['topic'], msg['body'], msg['headers']
+
+        if 'bug' not in msg:
+            self.debug("DROP: message has no 'bug' field. Non public.")
+            return
 
         # As of https://bugzilla.redhat.com/show_bug.cgi?id=1248259, bugzilla
         # will send the product along with the initial message, so let's check
         # it.
-        if not 'product' in msg:
-            self.debug("DROP: message does not bear a 'product' field.")
+        if msg['bug']['product']['name'] not in self.products:
+            self.debug("DROP: %r not in %r" % (
+                msg['bug']['product']['name'], self.products))
             return
 
-        if msg['product'] not in self.products:
-            self.debug("DROP: %r not in %r" % (msg['product'], self.products))
-            return
-
-        # Now, look up our bug in bugzilla to get more details.
-        self.debug("Gathering metadata for #%s" % msg['bug_id'])
-        bug = self.bugzilla.getbug(msg['bug_id'])
-
-        # Parse the timestamp in msg.  It looks like 2013-05-17T02:33:00+00:00
-        # Format changed https://bugzilla.redhat.com/show_bug.cgi?id=1139955
-        timezone_naive_timestamp = msg['timestamp'].rsplit('+')[0]
-        msg['timestamp'] = dateutil.parser.parse(timezone_naive_timestamp)
-
-        # Find the event from the bz history that most likely corresponds here.
-        self.debug("Gathering history for #%s" % msg['bug_id'])
-        history = bug.get_history()['bugs'][0]['history']
-        history = convert_datetimes(history)
-
-        self.debug("Organizing metadata for #%s" % msg['bug_id'])
-        bug = dict([(attr, getattr(bug, attr, None)) for attr in bug_fields])
+        self.debug("Organizing metadata for #%s" % msg['bug']['id'])
+        bug = msg['bug']
+        bug = dict([(attr, bug.get(attr, None)) for attr in bug_fields])
         bug = convert_datetimes(bug)
 
+        msg['timestamp'] = datetime.datetime.fromtimestamp(
+            int(headers['timestamp']) / 1000.0, pytz.UTC)
         comment = self.find_relevant_item(msg, bug['comments'], 'time')
-        event = self.find_relevant_item(msg, history, 'when')
+        event = msg.get('event')
+        event = convert_datetimes(event)
+
+        # backwards compat for fedmsg.meta for bz5
+        if bug['assigned_to']:
+            bug['assigned_to'] = bug['assigned_to']['login']
+        if bug['component']:
+            bug['component'] = bug['component']['name']
+        bug['cc'] = bug['cc'] or []
+        event['who'] = event['user']['login']
+        event['changes'] = event.get('changes', [])
+        for change in event['changes']:
+            change['field_name'] = change['field']
+        # end backwards compat handling
 
         # If there are no events in the history, then this is a new bug.
         topic = 'bug.update'
         if not event and len(bug['comments']) == 1:
             topic = 'bug.new'
 
-        self.debug("Republishing #%s" % msg['bug_id'])
+        self.debug("Republishing #%s" % msg['bug']['id'])
         fedmsg.publish(
             modname='bugzilla',
             topic=topic,
