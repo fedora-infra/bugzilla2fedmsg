@@ -1,24 +1,23 @@
-from setuptools import setup
+#!/usr/bin/env python
+
+from setuptools import setup, find_packages
+
 
 setup(
     name='bugzilla2fedmsg',
-    version='0.3.1',
+    version='0.4.0',
     description='Consume BZ messages over STOMP and republish to fedmsg',
     license='LGPLv2+',
     author='Ralph Bean',
     author_email='rbean@redhat.com',
     url='https://github.com/fedora-infra/bugzilla2fedmsg',
     install_requires=[
-        "fedmsg",
-        "python-bugzilla",
+        "fedora_messaging",
         "python-dateutil",
-        "moksha.hub",
-        "stomper",
+        "stompest",
     ],
-    packages=[],
-    py_modules=['bugzilla2fedmsg'],
-    entry_points="""
-    [moksha.consumer]
-    bugzilla2fedmsg = bugzilla2fedmsg:BugzillaConsumer
-    """,
+    packages=find_packages(),
+    entry_points={
+        "console_scripts": ["bugzilla2fedmsg=bugzilla2fedmsg:cli"]
+    },
 )

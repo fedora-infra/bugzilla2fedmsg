@@ -3,6 +3,11 @@ Changelog
 
 .. Generate with git log --no-merges --pretty='format:- %s `%h <https://github.com/fedora-infra/bugzilla2fedmsg/commit/%H>`_' last-tag..
 
+0.4.0
+-----
+
+- Migrate to Fedora Messaging
+
 0.3.1
 -----
 
