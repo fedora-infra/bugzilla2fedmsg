@@ -1,8 +1,6 @@
 [run]
 # Track what conditional branches are covered.
 branch = True
-include =
-    bugzilla2fedmsg/*
 
 [report]
 # Fail if the coverage is not 100%
