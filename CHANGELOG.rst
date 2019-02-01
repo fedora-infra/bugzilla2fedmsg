@@ -1,3 +1,18 @@
+Changelog
+=========
+
+.. Generate with git log --no-merges --pretty='format:- %s `%h <https://github.com/fedora-infra/bugzilla2fedmsg/commit/%H>`_' last-tag..
+
+0.3.1
+-----
+
+- Use Tox and Jenkins `d26645e <https://github.com/fedora-infra/bugzilla2fedmsg/commit/d26645e78f36bd3288300f5373dd4f80d4fff767>`_
+- Update for bz5. `ee54877 <https://github.com/fedora-infra/bugzilla2fedmsg/commit/ee548775f099dbf5ee0fdf33643dcaa2ae745665>`_
+- Pass along STOMP headers, if we have them. `018492a <https://github.com/fedora-infra/bugzilla2fedmsg/commit/018492a27b1b5afa669f77e59c5da45adb738cb9>`_
+- No more attachments. `84cd372 <https://github.com/fedora-infra/bugzilla2fedmsg/commit/84cd37207be77228192efa2c3fdb54eb190e1b6a>`_
+- Make all timestamps comparable. `35b5900 <https://github.com/fedora-infra/bugzilla2fedmsg/commit/35b5900c156b4c6fca401ab2097879d98761befe>`_
+- use the full name here. `b6cccd1 <https://github.com/fedora-infra/bugzilla2fedmsg/commit/b6cccd16bef2dcfa6ea7239b6b2099ae99ba92dc>`_
+- Fix broken import. `ce290be <https://github.com/fedora-infra/bugzilla2fedmsg/commit/ce290beedbae80e146f06752a4683413ad3007e9>`_
 
 0.3.0
 -----
@@ -17,8 +32,6 @@ Commits
   https://github.com/fedora-infra/bugzilla2fedmsg/commit/9ede5ffab
 - 1863f1959 Got moved again.
   https://github.com/fedora-infra/bugzilla2fedmsg/commit/1863f1959
-Changelog
-=========
 
 0.2.1
 -----
