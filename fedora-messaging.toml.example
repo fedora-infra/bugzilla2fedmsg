@@ -25,6 +25,9 @@ certfile = "/my/client/cert.pem"
     # Queue to subscribe to
     queue = "/queue/fedora_from_esb"
 
+    # Heartbeat to keep the connection open
+    heartbeat = 1000
+
     # How many messages to prefetch
     prefetch_size = 100
 

@@ -7,6 +7,7 @@ Authors: Aurelien Bompard <abompard@fedoraproject.org>
 import json
 import logging
 import ssl
+import threading
 
 from fedora_messaging.config import conf
 from stompest.config import StompConfig
@@ -22,6 +23,7 @@ class BugzillaConsumer:
     def __init__(self, relay):
         self.relay = relay
         self._running = False
+        self._heartbeat_timer = None
 
         # Bugzilla
         self.products = (
@@ -32,7 +34,8 @@ class BugzillaConsumer:
 
         # STOMP
         stomp_config = conf["consumer_config"].get("stomp", {})
-        self.queue_name = stomp_config.get("queue", "/queue/fedora_from_esb")
+        self._queue_name = stomp_config.get("queue", "/queue/fedora_from_esb")
+        self._heartbeat = stomp_config.get("heartbeat")
         ssl_context = ssl.create_default_context()
         # Disable cert validation for demo only
         ssl_context.check_hostname = False
@@ -44,6 +47,7 @@ class BugzillaConsumer:
             login=stomp_config.get("user"),
             passcode=stomp_config.get("pass"),
             sslContext=ssl_context,
+            version=StompSpec.VERSION_1_2,
         )
         self.stomp = Stomp(stomp_config)
 
@@ -51,14 +55,19 @@ class BugzillaConsumer:
 
     def consume(self):
         self._running = True
-        self.stomp.connect()
+        LOGGER.debug("STOMP consumer is connecting...")
+        heartbeats = None
+        if self._heartbeat:
+            heartbeats = (self._heartbeat, self._heartbeat)
+        self.stomp.connect(heartBeats=heartbeats)
         headers = {
             # client-individual mode is necessary for concurrent processing
             # (requires ActiveMQ >= 5.2)
             StompSpec.ACK_HEADER: StompSpec.ACK_CLIENT_INDIVIDUAL
         }
+        self.setup_heartbeat()
         try:
-            self.stomp.subscribe(self.queue_name, headers)
+            self.stomp.subscribe(self._queue_name, headers)
         except StompProtocolError:
             # Already subscribed, probably a reconnection.
             pass
@@ -80,3 +89,18 @@ class BugzillaConsumer:
 
     def stop(self):
         self._running = False
+        if self._heartbeat_timer:
+            self._heartbeat_timer.cancel()
+
+    def setup_heartbeat(self):
+        if not self._heartbeat:
+            return
+
+        def _send_heartbeat():
+            if not self._running:
+                return
+            self.stomp.beat()
+            self.setup_heartbeat()
+        delay = self._heartbeat - self._heartbeat / 10
+        self._heartbeat_timer = threading.Timer(delay / 1000, _send_heartbeat)
+        self._heartbeat_timer.start()

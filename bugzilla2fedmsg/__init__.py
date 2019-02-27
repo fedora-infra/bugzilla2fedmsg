@@ -32,5 +32,9 @@ def cli(config):
     while True:
         try:
             consumer.consume()
-        except StompConnectionError:
+        except StompConnectionError as e:
+            click.echo("Disconnected: {}".format(e))
             time.sleep(3)
+        except KeyboardInterrupt:
+            consumer.stop()
+            raise
