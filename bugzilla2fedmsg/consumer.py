@@ -13,7 +13,6 @@ from fedora_messaging.config import conf
 from stompest.config import StompConfig
 from stompest.protocol import StompSpec
 from stompest.sync import Stomp
-from stompest.error import StompProtocolError
 
 
 LOGGER = logging.getLogger(__name__)
@@ -65,12 +64,10 @@ class BugzillaConsumer:
             # (requires ActiveMQ >= 5.2)
             StompSpec.ACK_HEADER: StompSpec.ACK_CLIENT_INDIVIDUAL
         }
+        if self.stomp.session.version == StompSpec.VERSION_1_2:
+            headers["id"] = 0
         self.setup_heartbeat()
-        try:
-            self.stomp.subscribe(self._queue_name, headers)
-        except StompProtocolError:
-            # Already subscribed, probably a reconnection.
-            pass
+        self.stomp.subscribe(self._queue_name, headers)
         LOGGER.info("STOMP consumer is ready")
         while self._running:
             frame = self.stomp.receiveFrame()
