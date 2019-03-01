@@ -6,15 +6,27 @@ from setuptools import setup, find_packages
 setup(
     name='bugzilla2fedmsg',
     version='0.4.0',
-    description='Consume BZ messages over STOMP and republish to fedmsg',
+    description='Consume Bugzilla messages over STOMP and republish to Fedora Messaging',
     license='LGPLv2+',
     author='Ralph Bean',
     author_email='rbean@redhat.com',
     url='https://github.com/fedora-infra/bugzilla2fedmsg',
+    # Possible options are at https://pypi.python.org/pypi?%3Aaction=list_classifiers
+    classifiers=[
+        "Development Status :: 5 - Production/Stable",
+        "License :: OSI Approved ::  GNU Lesser General Public License v2 or later (LGPLv2+)",
+        "Operating System :: POSIX :: Linux",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+    ],
     install_requires=[
         "fedora_messaging",
         "python-dateutil",
         "stompest",
+        "pyasn1",
     ],
     packages=find_packages(),
     entry_points={

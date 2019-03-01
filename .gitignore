@@ -1,8 +1,9 @@
 *.pyc
 *.egg-info
 *.egg*
-development.ini
+fedora-messaging.toml
 dist
+build
 *.crt
 *.key
 *.gpg
@@ -10,3 +11,5 @@ dist
 .coverage
 htmlcov
 coverage.xml
+venv
+.venv
