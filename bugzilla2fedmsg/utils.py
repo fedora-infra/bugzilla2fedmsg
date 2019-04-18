@@ -29,27 +29,3 @@ def convert_datetimes(obj):
         return datetime.datetime.fromtimestamp(timestamp, pytz.UTC)
     else:
         return obj
-
-
-def find_relevant_item(msg, history, key):
-    """ Find the change from the BZ history with the closest timestamp to a
-    given message.  Unfortunately, we can't rely on matching the timestamps
-    exactly so instead we say that if the best match is within 60s of the
-    message, then return it.  Otherwise return None.
-    """
-
-    if not history:
-        return None
-
-    best = history[0]
-    best_delta = abs(best[key] - msg['timestamp'])
-
-    for event in history[1:]:
-        if abs(event[key] - msg['timestamp']) < best_delta:
-            best = event
-            best_delta = abs(best[key] - msg['timestamp'])
-
-    if best_delta < datetime.timedelta(seconds=60):
-        return best
-    else:
-        return None
