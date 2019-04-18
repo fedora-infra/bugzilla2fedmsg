@@ -21,7 +21,6 @@ BUG_FIELDS = [
     "component",
     "components",
     "creation_time",
-    "creator",
     "depends_on",
     "description",
     "docs_contact",
@@ -44,6 +43,7 @@ BUG_FIELDS = [
     "qa_contact",
     "actual_time",
     "remaining_time",
+    "reporter",
     "resolution",
     "see_also",
     "severity",
@@ -113,6 +113,8 @@ class MessageRelay:
         if bug["component"]:
             bug["component"] = bug["component"]["name"]
         bug["cc"] = bug["cc"] or []
+        if bug["reporter"]:
+            bug["creator"] = bug["reporter"]["login"]
         event["who"] = event["user"]["login"]
         event["changes"] = event.get("changes", [])
         for change in event["changes"]:
