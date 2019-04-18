@@ -36,7 +36,7 @@ BUG_FIELDS = [
     "is_open",
     "keywords",
     "last_change_time",
-    "op_sys",
+    "operating_system",
     "platform",
     "priority",
     "product",
@@ -115,6 +115,8 @@ class MessageRelay:
         bug["cc"] = bug["cc"] or []
         if bug["reporter"]:
             bug["creator"] = bug["reporter"]["login"]
+        if bug["operating_system"]:
+            bug["op_sys"] = bug["operating_system"]
         event["who"] = event["user"]["login"]
         event["changes"] = event.get("changes", [])
         for change in event["changes"]:

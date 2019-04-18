@@ -550,6 +550,8 @@ class TestRelay(object):
         assert message.body['event']['routing_key'] == "bug.create"
         # check 'creator' backwards compat
         assert message.body['bug']['creator'] == "dgunchev@gmail.com"
+        # check 'op_sys' backwards compat
+        assert message.body['bug']['op_sys'] == "Unspecified"
         # this tests convert_datetimes
         createtime = message.body['bug']['creation_time']
         assert createtime == datetime.datetime.fromtimestamp(1555619221, pytz.UTC)
