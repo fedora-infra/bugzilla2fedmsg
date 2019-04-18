@@ -10,6 +10,116 @@ import mock
 import pytz
 import bugzilla2fedmsg.relay
 
+# sample public bug creation messages
+BUGCREATE = {
+  "username": None,
+  "source_name": "datanommer",
+  "certificate": None,
+  "i": 0,
+  "timestamp": 1555619246.0,
+  "msg_id": "ID:messaging-devops-broker02.web.prod.ext.phx2.redhat.com-42079-1555559691665-1:361:-1:1:8852",
+  "crypto": None,
+  "topic": "/topic/VirtualTopic.eng.bugzilla.bug.create",
+  "headers": {
+    "content-length": "1498",
+    "expires": "1555705646848",
+    "esbMessageType": "bugzillaNotification",
+    "timestamp": "1555619246848",
+    "original-destination": "/topic/VirtualTopic.eng.bugzilla.bug.create",
+    "destination": "/topic/VirtualTopic.eng.bugzilla.bug.create",
+    "correlation-id": "06ed3815-4596-49a0-a5a5-1d5b6b7bf01a",
+    "priority": "4",
+    "subscription": "/queue/Consumer.client-datanommer.upshift-prod.VirtualTopic.eng.>",
+    "amq6100_destination": "queue://Consumer.client-datanommer.upshift-prod.VirtualTopic.eng.>",
+    "amq6100_originalDestination": "topic://VirtualTopic.eng.bugzilla.bug.create",
+    "message-id": "ID:messaging-devops-broker02.web.prod.ext.phx2.redhat.com-42079-1555559691665-1:361:-1:1:8852",
+    "esbSourceSystem": "bugzilla"
+  },
+  "signature": None,
+  "source_version": "0.9.1",
+  "body": {
+    "bug": {
+      "whiteboard": "abrt_hash:ca3702e55e5d4a4f3057d7a62ad195583a2b9a409990f275a36c87373bd77445;",
+      "classification": "Fedora",
+      "cf_story_points": "",
+      "creation_time": "2019-04-18T20:27:01",
+      "target_milestone": None,
+      "keywords": [],
+      "summary": "SELinux is preventing touch from 'write' accesses on the file /var/log/shorewall-init.log.",
+      "cf_ovirt_team": "",
+      "cf_release_notes": "",
+      "cf_cloudforms_team": "",
+      "cf_type": "",
+      "cf_fixed_in": "",
+      "cf_atomic": "",
+      "id": 1701391,
+      "priority": "unspecified",
+      "platform": "x86_64",
+      "version": {
+        "id": 5586,
+        "name": "29"
+      },
+      "cf_regression_status": "",
+      "cf_environment": "",
+      "status": {
+        "id": 1,
+        "name": "NEW"
+      },
+      "product": {
+        "id": 49,
+        "name": "Fedora"
+      },
+      "qa_contact": {
+        "login": "extras-qa@fedoraproject.org",
+        "id": 171387,
+        "real_name": "Fedora Extras Quality Assurance"
+      },
+      "reporter": {
+        "login": "dgunchev@gmail.com",
+        "id": 156190,
+        "real_name": "Doncho Gunchev"
+      },
+      "component": {
+        "id": 17100,
+        "name": "selinux-policy"
+      },
+      "cf_category": "",
+      "cf_doc_type": "",
+      "cf_documentation_action": "",
+      "cf_clone_of": "",
+      "is_private": False,
+      "severity": "unspecified",
+      "operating_system": "Unspecified",
+      "url": "",
+      "last_change_time": "2019-04-18T20:27:01",
+      "cf_crm": "",
+      "cf_last_closed": None,
+      "alias": [],
+      "flags": [],
+      "assigned_to": {
+        "login": "lvrabec@redhat.com",
+        "id": 316673,
+        "real_name": "Lukas Vrabec"
+      },
+      "resolution": "",
+      "cf_mount_type": ""
+    },
+    "event": {
+      "target": "bug",
+      "change_set": "6792.1555619221.41171",
+      "routing_key": "bug.create",
+      "bug_id": 1701391,
+      "user": {
+        "login": "dgunchev@gmail.com",
+        "id": 156190,
+        "real_name": "Doncho Gunchev"
+      },
+      "time": "2019-04-18T20:27:01",
+      "action": "create"
+    }
+  }
+}
+
 # sample public bug modify message
 BUGMODIFY = {
   "username": None,
@@ -428,6 +538,16 @@ OTHERPRODUCT = {
 
 class TestRelay(object):
     relay = bugzilla2fedmsg.relay.MessageRelay({'bugzilla': {'products': ["Fedora", "Fedora EPEL"]}})
+
+    @mock.patch('bugzilla2fedmsg.relay.publish', autospec=True)
+    def test_bug_create(self, fakepublish):
+        """Check correct result for bug.create message."""
+        self.relay.on_stomp_message(BUGCREATE['body'], BUGCREATE['headers'])
+        assert fakepublish.call_count == 1
+        message = fakepublish.call_args[0][0]
+        assert message.topic == 'bugzilla.bug.new'
+        assert 'product' in message.body['bug']
+        assert message.body['event']['routing_key'] == "bug.create"
 
     @mock.patch('bugzilla2fedmsg.relay.publish', autospec=True)
     def test_bug_modify(self, fakepublish):

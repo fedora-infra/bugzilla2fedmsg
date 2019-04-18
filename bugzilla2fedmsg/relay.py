@@ -124,9 +124,8 @@ class MessageRelay:
             objdict[obj]['author'] = event.get('user', {}).get('login', '')
         # end backwards compat handling
 
-        # If there are no events in the history, then this is a new bug.
         topic = "bug.update"
-        if not event and len(bug["comments"]) == 1:
+        if 'bug.create' in headers['destination']:
             topic = "bug.new"
 
         # construct message dict, add the object dict we got earlier
