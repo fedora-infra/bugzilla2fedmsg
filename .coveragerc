@@ -3,8 +3,8 @@
 branch = True
 
 [report]
-# Fail if the coverage is not 100%
-fail_under = 100
+# Fail if the coverage is not 50%
+fail_under = 50
 # Display results with up 1/100th of a percent accuracy.
 precision = 2
 exclude_lines =
