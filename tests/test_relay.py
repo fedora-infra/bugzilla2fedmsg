@@ -548,6 +548,9 @@ class TestRelay(object):
         assert message.topic == 'bugzilla.bug.new'
         assert 'product' in message.body['bug']
         assert message.body['event']['routing_key'] == "bug.create"
+        # this tests convert_datetimes
+        createtime = message.body['bug']['creation_time']
+        assert createtime == datetime.datetime.fromtimestamp(1555619221, pytz.UTC)
 
     @mock.patch('bugzilla2fedmsg.relay.publish', autospec=True)
     def test_bug_modify(self, fakepublish):
