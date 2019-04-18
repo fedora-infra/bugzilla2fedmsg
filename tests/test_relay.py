@@ -357,6 +357,128 @@ COMMENTCREATE = {
   }
 }
 
+# sample public attachment.create message
+ATTACHMENTCREATE = {
+  "username": None,
+  "source_name": "datanommer",
+  "certificate": None,
+  "i": 0,
+  "timestamp": 1555610522.0,
+  "msg_id": "ID:messaging-devops-broker02.web.prod.ext.phx2.redhat.com-42079-1555559691665-1:361:-1:1:7668",
+  "crypto": None,
+  "topic": "/topic/VirtualTopic.eng.bugzilla.attachment.create",
+  "headers": {
+    "content-length": "1883",
+    "expires": "1555696922855",
+    "esbMessageType": "bugzillaNotification",
+    "timestamp": "1555610522855",
+    "original-destination": "/topic/VirtualTopic.eng.bugzilla.attachment.create",
+    "destination": "/topic/VirtualTopic.eng.bugzilla.attachment.create",
+    "correlation-id": "861b24d9-bada-472a-8017-a06bff301595",
+    "priority": "4",
+    "subscription": "/queue/Consumer.client-datanommer.upshift-prod.VirtualTopic.eng.>",
+    "amq6100_destination": "queue://Consumer.client-datanommer.upshift-prod.VirtualTopic.eng.>",
+    "amq6100_originalDestination": "topic://VirtualTopic.eng.bugzilla.attachment.create",
+    "message-id": "ID:messaging-devops-broker02.web.prod.ext.phx2.redhat.com-42079-1555559691665-1:361:-1:1:7668",
+    "esbSourceSystem": "bugzilla"
+  },
+  "signature": None,
+  "source_version": "0.9.1",
+  "body": {
+    "attachment": {
+      "description": "File: var_log_messages",
+      "file_name": "var_log_messages",
+      "is_patch": False,
+      "creation_time": "2019-04-18T18:01:51",
+      "id": 1556193,
+      "flags": [],
+      "last_change_time": "2019-04-18T18:01:51",
+      "content_type": "text/plain",
+      "is_obsolete": False,
+      "bug": {
+        "whiteboard": "abrt_hash:9045fad863095a5d3f3b387af2b95f43b3482a1d;VARIANT_ID=workstation;",
+        "classification": "Fedora",
+        "cf_story_points": "",
+        "creation_time": "2019-04-18T18:01:33",
+        "target_milestone": None,
+        "keywords": [],
+        "summary": "[abrt] gnome-software: gtk_widget_unparent(): gnome-software killed by SIGSEGV",
+        "cf_ovirt_team": "",
+        "cf_release_notes": "",
+        "cf_cloudforms_team": "",
+        "cf_type": "",
+        "cf_fixed_in": "",
+        "cf_atomic": "",
+        "id": 1701353,
+        "priority": "unspecified",
+        "platform": "x86_64",
+        "version": {
+          "id": 5713,
+          "name": "30"
+        },
+        "cf_regression_status": "",
+        "cf_environment": "",
+        "status": {
+          "id": 1,
+          "name": "NEW"
+        },
+        "product": {
+          "id": 49,
+          "name": "Fedora"
+        },
+        "qa_contact": {
+          "login": "extras-qa@fedoraproject.org",
+          "id": 171387,
+          "real_name": "Fedora Extras Quality Assurance"
+        },
+        "reporter": {
+          "login": "peter@sonniger-tag.eu",
+          "id": 361290,
+          "real_name": "Peter"
+        },
+        "component": {
+          "id": 126541,
+          "name": "gnome-software"
+        },
+        "cf_category": "",
+        "cf_doc_type": "If docs needed, set a value",
+        "cf_documentation_action": "",
+        "cf_clone_of": "",
+        "is_private": False,
+        "severity": "unspecified",
+        "operating_system": "Unspecified",
+        "url": "https://retrace.fedoraproject.org/faf/reports/bthash/f4ca1e58d66fb046d6d1d1b18a84dd779ad34624",
+        "last_change_time": "2019-04-18T18:01:50",
+        "cf_crm": "",
+        "cf_last_closed": None,
+        "alias": [],
+        "flags": [],
+        "assigned_to": {
+          "login": "rhughes@redhat.com",
+          "id": 213548,
+          "real_name": "Richard Hughes"
+        },
+        "resolution": "",
+        "cf_mount_type": ""
+      },
+      "is_private": False
+    },
+    "event": {
+      "target": "attachment",
+      "change_set": "78355.1555610511.09385",
+      "routing_key": "attachment.create",
+      "bug_id": 1701353,
+      "user": {
+        "login": "peter@sonniger-tag.eu",
+        "id": 361290,
+        "real_name": "Peter"
+      },
+      "time": "2019-04-18T18:01:51",
+      "action": "create"
+    }
+  }
+}
+
 # sample private message
 PRIVATE = {
   "username": None,
@@ -584,6 +706,29 @@ class TestRelay(object):
         # we probably don't need to check these whole things...
         assert 'product' in message.body['bug']
         assert message.body['event']['routing_key'] == "comment.create"
+
+    @mock.patch('bugzilla2fedmsg.relay.publish', autospec=True)
+    def test_attachment_create(self, fakepublish):
+        """Check correct result for attachment.create message."""
+        self.relay.on_stomp_message(ATTACHMENTCREATE['body'], ATTACHMENTCREATE['headers'])
+        assert fakepublish.call_count == 1
+        message = fakepublish.call_args[0][0]
+        assert message.topic == 'bugzilla.bug.update'
+        assert message.body['attachment'] == {
+            "description": "File: var_log_messages",
+            "file_name": "var_log_messages",
+            "is_patch": False,
+            "creation_time": datetime.datetime.fromtimestamp(1555610511, pytz.UTC),
+            "id": 1556193,
+            "flags": [],
+            "last_change_time": datetime.datetime.fromtimestamp(1555610511, pytz.UTC),
+            "content_type": "text/plain",
+            "is_obsolete": False,
+            "is_private": False,
+        }
+        # we probably don't need to check these whole things...
+        assert 'product' in message.body['bug']
+        assert message.body['event']['routing_key'] == "attachment.create"
 
     @mock.patch('bugzilla2fedmsg.relay.publish', autospec=True)
     def test_private_drop(self, fakepublish):
