@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='bugzilla2fedmsg',
-    version='0.4.0',
+    version='1.0.0',
     description='Consume Bugzilla messages over STOMP and republish to Fedora Messaging',
     license='LGPLv2+',
     author='Ralph Bean',
