@@ -1,13 +1,11 @@
-Moksha consumer that listens to BZ over STOMP and reproduces to fedmsg
+Consumer that listens to BZ over STOMP and reproduces to Fedora Messaging.
 
 Try it out::
 
-    cp development.ini.example development.ini
+    cp fedora-messaging.toml.example fedora-messaging.toml
 
 Edit it to point at your STOMP broker.
 
 Run with::
 
-    moksha-hub
-
-It should pick up the bugzilla2fedmsg consumer.
+    bugzilla2fedmsg
