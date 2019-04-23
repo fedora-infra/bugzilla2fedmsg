@@ -11,10 +11,40 @@ from .utils import convert_datetimes
 LOGGER = logging.getLogger(__name__)
 
 
+def _bz4_compat_transform(bug, event, objdict, obj):
+    """Modify the bug, event and obj dicts for a message to look more
+    like a Bugzilla 4-era message's dicts did. Returns nothing as it
+    modifies the dicts in place.
+    """
+    if bug.get("assigned_to", {}).get("login"):
+        bug["assigned_to"] = bug["assigned_to"]["login"]
+    if bug.get("component", {}).get("name"):
+        bug["component"] = bug["component"]["name"]
+    if bug.get("product", {}).get("name"):
+        bug["product"] = bug["product"]["name"]
+    bug["cc"] = bug.get("cc", [])
+    if bug.get("reporter", {}).get("login"):
+        bug["creator"] = bug["reporter"]["login"]
+    if bug.get("operating_system"):
+        bug["op_sys"] = bug["operating_system"]
+    if not bug.get("weburl"):
+        bug["weburl"] = "https://bugzilla.redhat.com/show_bug.cgi?id=%s" % bug['id']
+    event["who"] = event["user"]["login"]
+    event["changes"] = event.get("changes", [])
+    for change in event["changes"]:
+        change["field_name"] = change["field"]
+    if obj == 'comment':
+        # I would expect this to be real_name so we're not spaffing
+        # email addresses all over, but I checked and historically
+        # it was definitely login
+        objdict[obj]['author'] = event.get('user', {}).get('login', '')
+
+
 class MessageRelay:
     def __init__(self, config):
         self.config = config
         self._allowed_products = self.config.get("bugzilla", {}).get("products", [])
+        self._bz4_compat_mode = self.config.get("bugzilla", {}).get("bz4compat", True)
 
     def on_stomp_message(self, body, headers):
 
@@ -56,30 +86,8 @@ class MessageRelay:
         event = body.get("event")
         event = convert_datetimes(event)
 
-        # backwards compat for bz5
-        if bug.get("assigned_to", {}).get("login"):
-            bug["assigned_to"] = bug["assigned_to"]["login"]
-        if bug.get("component", {}).get("name"):
-            bug["component"] = bug["component"]["name"]
-        if bug.get("product", {}).get("name"):
-            bug["product"] = bug["product"]["name"]
-        bug["cc"] = bug.get("cc", [])
-        if bug.get("reporter", {}).get("login"):
-            bug["creator"] = bug["reporter"]["login"]
-        if bug.get("operating_system"):
-            bug["op_sys"] = bug["operating_system"]
-        if not bug.get("weburl"):
-            bug["weburl"] = "https://bugzilla.redhat.com/show_bug.cgi?id=%s" % bug['id']
-        event["who"] = event["user"]["login"]
-        event["changes"] = event.get("changes", [])
-        for change in event["changes"]:
-            change["field_name"] = change["field"]
-        if obj == 'comment':
-            # I would expect this to be real_name so we're not spaffing
-            # email addresses all over, but I checked and historically
-            # it was definitely login
-            objdict[obj]['author'] = event.get('user', {}).get('login', '')
-        # end backwards compat handling
+        if self._bz4_compat_mode:
+            _bz4_compat_transform(bug, event, objdict, obj)
 
         topic = "bug.update"
         if 'bug.create' in headers['destination']:

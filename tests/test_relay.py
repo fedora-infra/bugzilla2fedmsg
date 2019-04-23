@@ -95,12 +95,14 @@ class TestRelay(object):
         assert fakepublish.call_count == 0
 
     @mock.patch('bugzilla2fedmsg.relay.publish', autospec=True)
-    def test_backwards_compat(self, fakepublish, bug_create_message, comment_create_message):
+    def test_bz4_compat(self, fakepublish, bug_create_message, comment_create_message):
         """This tests various modifications we make to the bug dict in
         the name of 'backwards compatibility', i.e. making messages
         look more like they did before Bugzilla 5.
         """
-        self.relay.on_stomp_message(bug_create_message['body'], bug_create_message['headers'])
+        bz4relay = bugzilla2fedmsg.relay.MessageRelay(
+            {'bugzilla': {'products': ["Fedora", "Fedora EPEL"], 'bz4compat': True}})
+        bz4relay.on_stomp_message(bug_create_message['body'], bug_create_message['headers'])
         assert fakepublish.call_count == 1
         message = fakepublish.call_args[0][0]
         assert message.body['bug']['assigned_to'] == "lvrabec@redhat.com"
@@ -117,6 +119,22 @@ class TestRelay(object):
         assert fakepublish.call_count == 1
         message = fakepublish.call_args[0][0]
         assert message.body['comment']['author'] == "smooge@redhat.com"
+
+    @mock.patch('bugzilla2fedmsg.relay.publish', autospec=True)
+    def test_bz4_compat_disabled(self, fakepublish, bug_create_message, comment_create_message):
+        """Test that we *don't* make Bugzilla 4 compat modifications
+        if the option is switched off. Tests only the destructive ones
+        as they're the ones we really want to avoid, and if these
+        aren't happening it's pretty certain the others aren't either.
+        """
+        nobz4relay = bugzilla2fedmsg.relay.MessageRelay(
+            {'bugzilla': {'products': ["Fedora", "Fedora EPEL"], 'bz4compat': False}})
+        nobz4relay.on_stomp_message(bug_create_message['body'], bug_create_message['headers'])
+        assert fakepublish.call_count == 1
+        message = fakepublish.call_args[0][0]
+        assert all(item in message.body['bug']['assigned_to'] for item in ('login', 'id', 'real_name'))
+        assert all(item in message.body['bug']['component'] for item in ('id', 'name'))
+        assert all(item in message.body['bug']['product'] for item in ('id', 'name'))
 
     @mock.patch('bugzilla2fedmsg.relay.publish', autospec=True)
     def test_publish_exception_publishreturned(self, fakepublish, bug_create_message, caplog):

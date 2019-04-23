@@ -32,7 +32,11 @@ certfile = "/my/client/cert.pem"
     prefetch_size = 100
 
     [consumer_config.bugzilla]
+    # Products to relay messages for - messages for bugs files against
+    # other products will be ignored
     products = ["Fedora", "Fedora EPEL"]
+    # Whether to modify messages to look more like Bugzilla 4 ones did
+    bz4compat = true
 
 
 [client_properties]
