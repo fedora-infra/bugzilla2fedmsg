@@ -57,15 +57,19 @@ class MessageRelay:
         event = convert_datetimes(event)
 
         # backwards compat for bz5
-        if bug["assigned_to"]:
+        if bug.get("assigned_to", {}).get("login"):
             bug["assigned_to"] = bug["assigned_to"]["login"]
-        if bug["component"]:
+        if bug.get("component", {}).get("name"):
             bug["component"] = bug["component"]["name"]
+        if bug.get("product", {}).get("name"):
+            bug["product"] = bug["product"]["name"]
         bug["cc"] = bug.get("cc", [])
-        if bug["reporter"]:
+        if bug.get("reporter", {}).get("login"):
             bug["creator"] = bug["reporter"]["login"]
-        if bug["operating_system"]:
+        if bug.get("operating_system"):
             bug["op_sys"] = bug["operating_system"]
+        if not bug.get("weburl"):
+            bug["weburl"] = "https://bugzilla.redhat.com/show_bug.cgi?id=%s" % bug['id']
         event["who"] = event["user"]["login"]
         event["changes"] = event.get("changes", [])
         for change in event["changes"]:

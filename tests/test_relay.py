@@ -22,10 +22,6 @@ class TestRelay(object):
         assert message.topic == 'bugzilla.bug.new'
         assert 'product' in message.body['bug']
         assert message.body['event']['routing_key'] == "bug.create"
-        # check 'creator' backwards compat
-        assert message.body['bug']['creator'] == "dgunchev@gmail.com"
-        # check 'op_sys' backwards compat
-        assert message.body['bug']['op_sys'] == "Unspecified"
         # this tests convert_datetimes
         createtime = message.body['bug']['creation_time']
         assert createtime == 1555619221.0
@@ -97,6 +93,30 @@ class TestRelay(object):
         """
         self.relay.on_stomp_message(other_product_message['body'], other_product_message['headers'])
         assert fakepublish.call_count == 0
+
+    @mock.patch('bugzilla2fedmsg.relay.publish', autospec=True)
+    def test_backwards_compat(self, fakepublish, bug_create_message, comment_create_message):
+        """This tests various modifications we make to the bug dict in
+        the name of 'backwards compatibility', i.e. making messages
+        look more like they did before Bugzilla 5.
+        """
+        self.relay.on_stomp_message(bug_create_message['body'], bug_create_message['headers'])
+        assert fakepublish.call_count == 1
+        message = fakepublish.call_args[0][0]
+        assert message.body['bug']['assigned_to'] == "lvrabec@redhat.com"
+        assert message.body['bug']['component'] == "selinux-policy"
+        assert message.body['bug']['product'] == "Fedora"
+        assert message.body['bug']['cc'] == []
+        assert message.body['bug']['creator'] == "dgunchev@gmail.com"
+        assert message.body['bug']['op_sys'] == "Unspecified"
+        assert message.body['event']['who'] == "dgunchev@gmail.com"
+        assert message.body['bug']['weburl'] == "https://bugzilla.redhat.com/show_bug.cgi?id=1701391"
+        # we need a comment message to test this
+        fakepublish.reset_mock()
+        self.relay.on_stomp_message(comment_create_message['body'], comment_create_message['headers'])
+        assert fakepublish.call_count == 1
+        message = fakepublish.call_args[0][0]
+        assert message.body['comment']['author'] == "smooge@redhat.com"
 
     @mock.patch('bugzilla2fedmsg.relay.publish', autospec=True)
     def test_publish_exception_publishreturned(self, fakepublish, bug_create_message, caplog):
