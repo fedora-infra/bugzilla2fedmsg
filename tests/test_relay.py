@@ -7,6 +7,7 @@ Authors:    Adam Williamson <awilliam@redhat.com>
 
 import mock
 import bugzilla2fedmsg.relay
+import fedora_messaging.exceptions
 
 # sample public bug creation messages
 BUGCREATE = {
@@ -743,3 +744,28 @@ class TestRelay(object):
         """
         self.relay.on_stomp_message(OTHERPRODUCT['body'], OTHERPRODUCT['headers'])
         assert fakepublish.call_count == 0
+
+    @mock.patch('bugzilla2fedmsg.relay.publish', autospec=True)
+    def test_publish_exception_publishreturned(self, fakepublish, caplog):
+        """Check that we handle PublishReturned exception from publish
+        correctly.
+        """
+        fakepublish.side_effect = fedora_messaging.exceptions.PublishReturned("oops!")
+        # this should not raise any exception
+        self.relay.on_stomp_message(BUGCREATE['body'], BUGCREATE['headers'])
+        assert fakepublish.call_count == 1
+        # check the logging worked
+        assert "Fedora Messaging broker rejected message" in caplog.text
+
+    @mock.patch('bugzilla2fedmsg.relay.publish', autospec=True)
+    def test_publish_exception_connectionexception(self, fakepublish, caplog):
+        """Check that we handle ConnectionException from publish
+        correctly.
+        """
+        # First test PublishReturned
+        fakepublish.side_effect = fedora_messaging.exceptions.ConnectionException("oops!")
+        # this should not raise any exception
+        self.relay.on_stomp_message(BUGCREATE['body'], BUGCREATE['headers'])
+        assert fakepublish.call_count == 1
+        # check the logging worked
+        assert "Error sending message" in caplog.text
