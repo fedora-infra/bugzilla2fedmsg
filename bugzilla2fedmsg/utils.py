@@ -15,7 +15,8 @@ LOGGER = logging.getLogger(__name__)
 
 def convert_datetimes(obj):
     """ Recursively convert the ISO-8601ish date/time strings we get
-    from stomp to stdlib datetimes.
+    from stomp to epoch integers (because this is what fedmsg used to
+    emit when we sent it datetime instances).
     """
 
     if isinstance(obj, list):
@@ -34,6 +35,6 @@ def convert_datetimes(obj):
             # UI it does indeed seem to be.
             ourdate = datetime.datetime.strptime(obj, "%Y-%m-%dT%H:%M:%S")
             ourdate = ourdate.replace(tzinfo=pytz.UTC)
-            return ourdate
+            return ourdate.timestamp()
         except (ValueError, TypeError):
             return obj

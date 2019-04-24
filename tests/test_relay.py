@@ -5,9 +5,7 @@ Authors:    Adam Williamson <awilliam@redhat.com>
 
 """
 
-import datetime
 import mock
-import pytz
 import bugzilla2fedmsg.relay
 
 # sample public bug creation messages
@@ -676,7 +674,7 @@ class TestRelay(object):
         assert message.body['bug']['op_sys'] == "Unspecified"
         # this tests convert_datetimes
         createtime = message.body['bug']['creation_time']
-        assert createtime == datetime.datetime.fromtimestamp(1555619221, pytz.UTC)
+        assert createtime == 1555619221.0
 
     @mock.patch('bugzilla2fedmsg.relay.publish', autospec=True)
     def test_bug_modify(self, fakepublish):
@@ -698,7 +696,7 @@ class TestRelay(object):
         assert message.body['comment'] == {
             "author": "smooge@redhat.com",
             "body": "qa09 and qa14 have 8 560 GB SAS drives which are RAID-6 together. \n\nThe systems we get from IBM come through a special contract which in the past required the system to be sent back to add hardware to it. When we added drives it also caused problems because the system didn't match the contract when we returned it. I am checking with IBM on the wearabouts for the systems.",
-            "creation_time": datetime.datetime.fromtimestamp(1555602938, pytz.UTC),
+            "creation_time": 1555602938.0,
             "number": 8,
             "id": 1691487,
             "is_private": False,
@@ -718,10 +716,10 @@ class TestRelay(object):
             "description": "File: var_log_messages",
             "file_name": "var_log_messages",
             "is_patch": False,
-            "creation_time": datetime.datetime.fromtimestamp(1555610511, pytz.UTC),
+            "creation_time": 1555610511.0,
             "id": 1556193,
             "flags": [],
-            "last_change_time": datetime.datetime.fromtimestamp(1555610511, pytz.UTC),
+            "last_change_time": 1555610511.0,
             "content_type": "text/plain",
             "is_obsolete": False,
             "is_private": False,
