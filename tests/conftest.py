@@ -236,7 +236,153 @@ def bug_modify_message(request):
             {
               "field": "cc",
               "removed": "",
-              "added": "mhroncok@redhat.com"
+              # this is changed from the original message (mhroncok
+              # actually CCed himself) to help with tests
+              "added": "awilliam@redhat.com"
+            }
+          ]
+        }
+      }
+    }
+
+
+@pytest.fixture(scope="function")
+def bug_modify_message_four_changes(request):
+    """Sample upstream bug.modify message with four changes."""
+    return {
+      "username": None,
+      "source_name": "datanommer",
+      "certificate": None,
+      "i": 0,
+      "timestamp": 1556151843.0,
+      "msg_id": "ID:messaging-devops-broker01.web.prod.ext.phx2.redhat.com-44024-1556115643434-1:509:-1:1:4467",
+      "crypto": None,
+      "topic": "/topic/VirtualTopic.eng.bugzilla.bug.modify",
+      "headers": {
+        "content-length": "1756",
+        "expires": "1556238243956",
+        "esbMessageType": "bugzillaNotification",
+        "timestamp": "1556151843956",
+        "original-destination": "/topic/VirtualTopic.eng.bugzilla.bug.modify",
+        "destination": "/topic/VirtualTopic.eng.bugzilla.bug.modify",
+        "correlation-id": "8b311d06-bd03-444f-aaec-ff2735b53424",
+        "priority": "4",
+        "subscription": "/queue/Consumer.client-datanommer.upshift-prod.VirtualTopic.eng.>",
+        "amq6100_destination": "queue://Consumer.client-datanommer.upshift-prod.VirtualTopic.eng.>",
+        "amq6100_originalDestination": "topic://VirtualTopic.eng.bugzilla.bug.modify",
+        "message-id": "ID:messaging-devops-broker01.web.prod.ext.phx2.redhat.com-44024-1556115643434-1:509:-1:1:4467",
+        "esbSourceSystem": "bugzilla"
+      },
+      "signature": None,
+      "source_version": "0.9.1",
+      "body": {
+        "bug": {
+          "whiteboard": "",
+          "classification": "Fedora",
+          "cf_story_points": "",
+          "creation_time": "2019-04-24T14:00:14",
+          "target_milestone": None,
+          "keywords": [],
+          "summary": "Review Request: perl-Class-AutoClass - Define classes and objects for Perl",
+          "cf_ovirt_team": "",
+          "cf_release_notes": "",
+          "cf_cloudforms_team": "",
+          "cf_type": "",
+          "cf_fixed_in": "",
+          "cf_atomic": "",
+          "id": 1702701,
+          "priority": "medium",
+          "platform": "All",
+          "version": {
+            "id": 495,
+            "name": "rawhide"
+          },
+          "cf_regression_status": "",
+          "cf_environment": "",
+          "status": {
+            "id": 26,
+            "name": "POST"
+          },
+          "product": {
+            "id": 49,
+            "name": "Fedora"
+          },
+          "qa_contact": {
+            "login": "extras-qa@fedoraproject.org",
+            "id": 171387,
+            "real_name": "Fedora Extras Quality Assurance"
+          },
+          "reporter": {
+            "login": "ppisar@redhat.com",
+            "id": 295770,
+            "real_name": "Petr Pisar"
+          },
+          "component": {
+            "id": 18186,
+            "name": "Package Review"
+          },
+          "cf_category": "",
+          "cf_doc_type": "If docs needed, set a value",
+          "cf_documentation_action": "",
+          "cf_clone_of": "",
+          "is_private": False,
+          "severity": "medium",
+          "operating_system": "Linux",
+          "url": "",
+          "last_change_time": "2019-04-24T14:00:14",
+          "cf_crm": "",
+          "cf_last_closed": None,
+          "alias": [],
+          "flags": [
+            {
+              "id": 4029953,
+              "value": "+",
+              "name": "fedora-review"
+            }
+          ],
+          "assigned_to": {
+            "login": "zebob.m@gmail.com",
+            "id": 401767,
+            "real_name": "Robert-Andr\u00e9 Mauchin"
+          },
+          "resolution": "",
+          "cf_mount_type": ""
+        },
+        "event": {
+          "target": "bug",
+          "change_set": "113867.1556151814.59504",
+          "routing_key": "bug.modify",
+          "bug_id": 1702701,
+          "user": {
+            "login": "zebob.m@gmail.com",
+            "id": 401767,
+            "real_name": "Robert-Andr\u00e9 Mauchin"
+          },
+          "time": "2019-04-25T00:23:35",
+          "action": "modify",
+          "changes": [
+            {
+              "field": "assigned_to",
+              "removed": "nobody@fedoraproject.org",
+              "added": "zebob.m@gmail.com"
+            },
+            {
+              "field": "bug_status",
+              "removed": "NEW",
+              "added": "POST"
+            },
+            {
+              "field": "cc",
+              "removed": "",
+              "added": "zebob.m@gmail.com"
+            },
+            # changed from original message: in original message this
+            # was a flag.fedora-review change, we make it a needinfo
+            # change so we can test gathering user from needinfo
+            {
+              "field": "flag.needinfo",
+              "removed": "",
+              "added": "? (rob@boberts.com)"
             }
           ]
         }
@@ -484,6 +630,138 @@ def attachment_create_message(request):
           },
           "time": "2019-04-18T18:01:51",
           "action": "create"
+        }
+      }
+    }
+
+
+@pytest.fixture(scope="function")
+def attachment_modify_message(request):
+    """Sample upstream attachment.modify message."""
+    return {
+      "username": None,
+      "source_name": "datanommer",
+      "certificate": None,
+      "i": 0,
+      "timestamp": 1556149890.0,
+      "msg_id": "ID:messaging-devops-broker01.web.prod.ext.phx2.redhat.com-44024-1556115643434-1:509:-1:1:4401",
+      "crypto": None,
+      "topic": "/topic/VirtualTopic.eng.bugzilla.attachment.modify",
+      "headers": {
+        "content-length": "1861",
+        "expires": "1556236290607",
+        "esbMessageType": "bugzillaNotification",
+        "timestamp": "1556149890607",
+        "original-destination": "/topic/VirtualTopic.eng.bugzilla.attachment.modify",
+        "destination": "/topic/VirtualTopic.eng.bugzilla.attachment.modify",
+        "correlation-id": "0e227da5-88fe-492a-b426-f1f9b11fab86",
+        "priority": "4",
+        "subscription": "/queue/Consumer.client-datanommer.upshift-prod.VirtualTopic.eng.>",
+        "amq6100_destination": "queue://Consumer.client-datanommer.upshift-prod.VirtualTopic.eng.>",
+        "amq6100_originalDestination": "topic://VirtualTopic.eng.bugzilla.attachment.modify",
+        "message-id": "ID:messaging-devops-broker01.web.prod.ext.phx2.redhat.com-44024-1556115643434-1:509:-1:1:4401",
+        "esbSourceSystem": "bugzilla"
+      },
+      "signature": None,
+      "source_version": "0.9.1",
+      "body": {
+        "attachment": {
+          "description": "patch to turn off reset quirk for SP1064 touch pad",
+          "file_name": "kernel-diff.patch",
+          "is_patch": True,
+          "creation_time": "2019-04-24T23:36:57",
+          "id": 1558429,
+          "flags": [],
+          "last_change_time": "2019-04-24T23:36:57",
+          "content_type": "text/plain",
+          "is_obsolete": True,
+          "bug": {
+            "whiteboard": "",
+            "classification": "Fedora",
+            "cf_story_points": "",
+            "creation_time": "2019-04-21T17:46:11",
+            "target_milestone": None,
+            "keywords": [],
+            "summary": "I2C_HID_QUIRK_NO_IRQ_AFTER_RESET caused teclast f7/ apollo_lake using i2c_hid.c driver to have stuck button down after period of time",
+            "cf_ovirt_team": "",
+            "cf_release_notes": "",
+            "cf_cloudforms_team": "",
+            "cf_type": "Bug",
+            "cf_fixed_in": "",
+            "cf_atomic": "",
+            "id": 1701766,
+            "priority": "unspecified",
+            "platform": "All",
+            "version": {
+              "id": 495,
+              "name": "rawhide"
+            },
+            "cf_regression_status": "",
+            "cf_environment": "",
+            "status": {
+              "id": 1,
+              "name": "NEW"
+            },
+            "product": {
+              "id": 49,
+              "name": "Fedora"
+            },
+            "qa_contact": {
+              "login": "extras-qa@fedoraproject.org",
+              "id": 171387,
+              "real_name": "Fedora Extras Quality Assurance"
+            },
+            "reporter": {
+              "login": "joequant@gmail.com",
+              "id": 356480,
+              "real_name": "Joseph Wang"
+            },
+            "component": {
+              "id": 11769,
+              "name": "kernel"
+            },
+            "cf_category": "",
+            "cf_doc_type": "If docs needed, set a value",
+            "cf_documentation_action": "",
+            "cf_clone_of": "",
+            "is_private": False,
+            "severity": "high",
+            "operating_system": "Linux",
+            "url": "",
+            "last_change_time": "2019-04-24T23:43:07",
+            "cf_crm": "",
+            "cf_last_closed": None,
+            "alias": [],
+            "flags": [],
+            "assigned_to": {
+              "login": "kernel-maint@redhat.com",
+              "id": 176318,
+              "real_name": "Kernel Maintainer List"
+            },
+            "resolution": "",
+            "cf_mount_type": ""
+          },
+          "is_private": False
+        },
+        "event": {
+          "target": "attachment",
+          "change_set": "105535.1556149887.38751",
+          "routing_key": "attachment.modify",
+          "bug_id": 1701766,
+          "user": {
+            "login": "joequant@gmail.com",
+            "id": 356480,
+            "real_name": "Joseph Wang"
+          },
+          "time": "2019-04-24T23:51:27",
+          "action": "modify",
+          "changes": [
+            {
+              "field": "isobsolete",
+              "removed": "0",
+              "added": "1"
+            }
+          ]
         }
       }
     }

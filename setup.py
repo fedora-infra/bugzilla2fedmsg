@@ -30,6 +30,10 @@ setup(
     ],
     packages=find_packages(),
     entry_points={
-        "console_scripts": ["bugzilla2fedmsg=bugzilla2fedmsg:cli"]
+        "console_scripts": ["bugzilla2fedmsg=bugzilla2fedmsg:cli"],
+        "fedora.messages": [
+            "bugzilla2fedmsg.messageV1bz4=bugzilla2fedmsg_schema.schema:MessageV1BZ4",
+            "bugzilla2fedmsg.messageV1=bugzilla2fedmsg_schema.schema:MessageV1",
+        ],
     },
 )

@@ -2,8 +2,11 @@ import datetime
 import logging
 
 import pytz
-from fedora_messaging.api import Message, publish
+from fedora_messaging.api import publish
 from fedora_messaging.exceptions import PublishReturned, ConnectionException
+from fedora_messaging.message import INFO
+
+from bugzilla2fedmsg_schema.schema import MessageV1, MessageV1BZ4
 
 from .utils import convert_datetimes
 
@@ -103,10 +106,14 @@ class MessageRelay:
         body.update(objdict)
 
         LOGGER.debug("Republishing #%s" % bug['id'])
+        messageclass = MessageV1
+        if self._bz4_compat_mode:
+            messageclass = MessageV1BZ4
         try:
-            message = Message(
+            message = messageclass(
                 topic="bugzilla.{}".format(topic),
                 body=body,
+                severity=INFO,
             )
             publish(message)
         except PublishReturned as e:
