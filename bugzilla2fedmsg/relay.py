@@ -10,59 +10,41 @@ from .utils import convert_datetimes
 
 LOGGER = logging.getLogger(__name__)
 
-# These are bug fields we're going to try and pass on to fedora-messaging.
-BUG_FIELDS = [
-    "alias",
-    "assigned_to",
-    # 'attachments',  # These can contain binary things we don't want to send.
-    "blocks",
-    "cc",
-    "classification",
-    "component",
-    "components",
-    "creation_time",
-    "depends_on",
-    "description",
-    "docs_contact",
-    "estimated_time",
-    "external_bugs",
-    "fixed_in",
-    "flags",
-    "groups",
-    "id",
-    "is_cc_accessible",
-    "is_confirmed",
-    "is_creator_accessible",
-    "is_open",
-    "keywords",
-    "last_change_time",
-    "operating_system",
-    "platform",
-    "priority",
-    "product",
-    "qa_contact",
-    "actual_time",
-    "remaining_time",
-    "reporter",
-    "resolution",
-    "see_also",
-    "severity",
-    "status",
-    "summary",
-    "target_milestone",
-    "target_release",
-    "url",
-    "version",
-    "versions",
-    "weburl",
-    "whiteboard",
-]
+
+def _bz4_compat_transform(bug, event, objdict, obj):
+    """Modify the bug, event and obj dicts for a message to look more
+    like a Bugzilla 4-era message's dicts did. Returns nothing as it
+    modifies the dicts in place.
+    """
+    if bug.get("assigned_to", {}).get("login"):
+        bug["assigned_to"] = bug["assigned_to"]["login"]
+    if bug.get("component", {}).get("name"):
+        bug["component"] = bug["component"]["name"]
+    if bug.get("product", {}).get("name"):
+        bug["product"] = bug["product"]["name"]
+    bug["cc"] = bug.get("cc", [])
+    if bug.get("reporter", {}).get("login"):
+        bug["creator"] = bug["reporter"]["login"]
+    if bug.get("operating_system"):
+        bug["op_sys"] = bug["operating_system"]
+    if not bug.get("weburl"):
+        bug["weburl"] = "https://bugzilla.redhat.com/show_bug.cgi?id=%s" % bug['id']
+    event["who"] = event["user"]["login"]
+    event["changes"] = event.get("changes", [])
+    for change in event["changes"]:
+        change["field_name"] = change["field"]
+    if obj == 'comment':
+        # I would expect this to be real_name so we're not spaffing
+        # email addresses all over, but I checked and historically
+        # it was definitely login
+        objdict[obj]['author'] = event.get('user', {}).get('login', '')
 
 
 class MessageRelay:
     def __init__(self, config):
         self.config = config
         self._allowed_products = self.config.get("bugzilla", {}).get("products", [])
+        self._bz4_compat_mode = self.config.get("bugzilla", {}).get("bz4compat", True)
 
     def on_stomp_message(self, body, headers):
 
@@ -98,35 +80,14 @@ class MessageRelay:
             LOGGER.debug("DROP: %r not in %r" % (product_name, self._allowed_products))
             return
 
-        LOGGER.debug("Organizing metadata for #%s" % bug["id"])
-        bug = dict([(attr, bug.get(attr, None)) for attr in BUG_FIELDS])
-
         body["timestamp"] = datetime.datetime.fromtimestamp(
             int(headers["timestamp"]) / 1000.0, pytz.UTC
         )
         event = body.get("event")
         event = convert_datetimes(event)
 
-        # backwards compat for bz5
-        if bug["assigned_to"]:
-            bug["assigned_to"] = bug["assigned_to"]["login"]
-        if bug["component"]:
-            bug["component"] = bug["component"]["name"]
-        bug["cc"] = bug["cc"] or []
-        if bug["reporter"]:
-            bug["creator"] = bug["reporter"]["login"]
-        if bug["operating_system"]:
-            bug["op_sys"] = bug["operating_system"]
-        event["who"] = event["user"]["login"]
-        event["changes"] = event.get("changes", [])
-        for change in event["changes"]:
-            change["field_name"] = change["field"]
-        if obj == 'comment':
-            # I would expect this to be real_name so we're not spaffing
-            # email addresses all over, but I checked and historically
-            # it was definitely login
-            objdict[obj]['author'] = event.get('user', {}).get('login', '')
-        # end backwards compat handling
+        if self._bz4_compat_mode:
+            _bz4_compat_transform(bug, event, objdict, obj)
 
         topic = "bug.update"
         if 'bug.create' in headers['destination']:
