@@ -26,6 +26,7 @@ setup(
         "python-dateutil",
         "stompest",
         "pyasn1",
+        "click",
     ],
     packages=find_packages(),
     entry_points={
