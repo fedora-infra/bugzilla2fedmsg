@@ -79,6 +79,29 @@ class TestRelay(object):
         assert message.body['event']['routing_key'] == "attachment.create"
 
     @mock.patch('bugzilla2fedmsg.relay.publish', autospec=True)
+    def test_attachment_modify(self, fakepublish, attachment_modify_message):
+        """Check correct result for attachment.modify message."""
+        self.relay.on_stomp_message(attachment_modify_message['body'], attachment_modify_message['headers'])
+        assert fakepublish.call_count == 1
+        message = fakepublish.call_args[0][0]
+        assert message.topic == 'bugzilla.bug.update'
+        assert message.body['attachment'] == {
+            "description": "patch to turn off reset quirk for SP1064 touch pad",
+            "file_name": "kernel-diff.patch",
+            "is_patch": True,
+            "creation_time": 1556149017.0,
+            "id": 1558429,
+            "flags": [],
+            "last_change_time": 1556149017.0,
+            "content_type": "text/plain",
+            "is_obsolete": True,
+            "is_private": False,
+        }
+        # we probably don't need to check these whole things...
+        assert 'product' in message.body['bug']
+        assert message.body['event']['routing_key'] == "attachment.modify"
+
+    @mock.patch('bugzilla2fedmsg.relay.publish', autospec=True)
     def test_private_drop(self, fakepublish, private_message):
         """Check that we drop (don't publish) a private message."""
         self.relay.on_stomp_message(private_message['body'], private_message['headers'])
