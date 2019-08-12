@@ -3,10 +3,32 @@ Changelog
 
 .. Generate with git log --no-merges --pretty='format:- %s `%h <https://github.com/fedora-infra/bugzilla2fedmsg/commit/%H>`_' last-tag..
 
-0.4.0
+1.0.0
 -----
 
-- Migrate to Fedora Messaging
+- Add missing dependency `8bf12ee <https://github.com/fedora-infra/bugzilla2fedmsg/commit/8bf12eec6c311588241f1599124bc783f2556a93>`_
+- Drop support for Python 3.4 `b5b9c0b <https://github.com/fedora-infra/bugzilla2fedmsg/commit/b5b9c0b93bc0f3d3771889b9e87243a6e2a7c8c1>`_
+- Implement message schemas `d0b799a <https://github.com/fedora-infra/bugzilla2fedmsg/commit/d0b799a0be6b8249fb2ce7b89d0f2a03b8547073>`_
+- Make Bugzilla 4 backwards compatibility transformation optional `424afa5 <https://github.com/fedora-infra/bugzilla2fedmsg/commit/424afa56565e025799e091520d333ec14779a660>`_
+- Extend backwards compatibility a bit `319e06a <https://github.com/fedora-infra/bugzilla2fedmsg/commit/319e06ac2627d75c30d1796492b8c050eb7bffef>`_
+- Make test messages into pytest fixtures `30d6950 <https://github.com/fedora-infra/bugzilla2fedmsg/commit/30d695016874695ad3de1687630718c10fffe5e0>`_
+- Don't 'organize' the message as it comes off the BZ wire `4f43653 <https://github.com/fedora-infra/bugzilla2fedmsg/commit/4f436530393502765ab16c5b640ada12a3ecbbf1>`_
+- Add tests for handling of exceptions from publish() `ee0c4c8 <https://github.com/fedora-infra/bugzilla2fedmsg/commit/ee0c4c83558216ae09490ad0f75a4fad08f90557>`_
+- Don't try and publish datetimes `73c9176 <https://github.com/fedora-infra/bugzilla2fedmsg/commit/73c9176ad59008181468d412fe11119e317dab64>`_
+- Add test for attachment.create message `3af89d2 <https://github.com/fedora-infra/bugzilla2fedmsg/commit/3af89d2d4aec14a1b459312b6a987a7eb1dc5588>`_
+- Also handle backwards compatibility for operating system `9deb916 <https://github.com/fedora-infra/bugzilla2fedmsg/commit/9deb916383707044a0839ccaf845cba897ab9896>`_
+- Handle 'reporter' vs. 'creator' with backwards compat `19fd1b4 <https://github.com/fedora-infra/bugzilla2fedmsg/commit/19fd1b4ff961b3f567527ec39768f425e42484a2>`_
+- Fix convert_datetimes for Bugzilla 5.0 messages `f386c7e <https://github.com/fedora-infra/bugzilla2fedmsg/commit/f386c7ea51173e0945aa3d6c5067145df0ae71f6>`_
+- Fix decision as to whether this is a 'new bug' event `7fd1fc5 <https://github.com/fedora-infra/bugzilla2fedmsg/commit/7fd1fc52f567aa2ae090425580503fd5de4faf8a>`_
+- Add a test suite `7d4352e <https://github.com/fedora-infra/bugzilla2fedmsg/commit/7d4352e0dbf0a694a2c0b9518d898d3446fae027>`_
+- Handle comments and other 'objects' for Bugzilla 5+ messages `aa98152 <https://github.com/fedora-infra/bugzilla2fedmsg/commit/aa981520c24f1183ec52f1af513ed8f4254a19b7>`_
+- Bump version `122ce19 <https://github.com/fedora-infra/bugzilla2fedmsg/commit/122ce19570618ddcef3f7b3e6045020f41f16fb6>`_
+- Improve the setup.py `5bb8cb5 <https://github.com/fedora-infra/bugzilla2fedmsg/commit/5bb8cb551dd88a70aaa2d3c4daa1d670039f7013>`_
+- Adapt to STOMP protocol 1.2 `25e2d20 <https://github.com/fedora-infra/bugzilla2fedmsg/commit/25e2d2040eb3492ac1038c29d309851570d8cfba>`_
+- Send and receive STOMP heartbeats `c67c49c <https://github.com/fedora-infra/bugzilla2fedmsg/commit/c67c49cc349629c7338a3e795c1fdcdc7b873aa9>`_
+- Handle duplicate subscriptions on reconnection `d04e8ce <https://github.com/fedora-infra/bugzilla2fedmsg/commit/d04e8ce6f71a16cdef2436e921957109b30627d7>`_
+- Migrate to Fedora Messaging `f2596f2 <https://github.com/fedora-infra/bugzilla2fedmsg/commit/f2596f2cba5885d5c6cf60c3a6dbe99b281eb54e>`_
+- Fix CI `9646437 <https://github.com/fedora-infra/bugzilla2fedmsg/commit/9646437cea7c3569614dbeb0d5b47208404b59be>`_
 
 0.3.1
 -----
