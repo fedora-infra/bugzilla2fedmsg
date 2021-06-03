@@ -7,6 +7,7 @@ Authors:    Adam Williamson <awilliam@redhat.com>
 
 import mock
 import pytest
+from jsonschema.exceptions import ValidationError
 
 import bugzilla2fedmsg.relay
 
@@ -173,3 +174,18 @@ class TestSchemas(object):
         # this should not raise an exception
         message.validate()
         assert message.packages == []
+
+    @pytest.mark.parametrize("relay", (bz4relay, nobz4relay))
+    @mock.patch('bugzilla2fedmsg.relay.publish', autospec=True)
+    def test_bug_no_qa_contact(self, fakepublish, bug_create_message, relay):
+        """Check bug.create message schema bits when qa_contact is None."""
+        bug_create_message["body"]["bug"]["qa_contact"] = None
+        relay.on_stomp_message(bug_create_message['body'], bug_create_message['headers'])
+        assert fakepublish.call_count == 1
+        message = fakepublish.call_args[0][0]
+        # this should not raise an exception
+        try:
+            message.validate()
+        except ValidationError as e:
+            assert False, e
+        assert message.bug["qa_contact"] is None

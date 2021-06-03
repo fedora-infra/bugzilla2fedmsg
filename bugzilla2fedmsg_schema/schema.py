@@ -193,12 +193,17 @@ class MessageV1(BaseMessage):
                         },
                     },
                     "qa_contact": {
-                        "type": "object",
-                        "properties": {
-                            "id": {"type": "number"},
-                            "login": {"type": "string"},
-                            "real_name": {"type": "string"},
-                        },
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "id": {"type": "number"},
+                                    "login": {"type": "string"},
+                                    "real_name": {"type": "string"},
+                                },
+                            },
+                            {"type:": "null"},
+                        ],
                     },
                     "reporter": {
                         "type": "object",
