@@ -193,7 +193,7 @@ class MessageV1(BaseMessage):
                         },
                     },
                     "qa_contact": {
-                        "oneOf": [
+                        "anyOf": [
                             {
                                 "type": "object",
                                 "properties": {
