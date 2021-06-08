@@ -5,11 +5,11 @@ Authors:    Adam Williamson <awilliam@redhat.com>
 
 """
 
-import mock
-import pytest
-from jsonschema.exceptions import ValidationError
+from unittest import mock
 
 import bugzilla2fedmsg.relay
+import pytest
+from jsonschema.exceptions import ValidationError
 
 
 class TestSchemas(object):

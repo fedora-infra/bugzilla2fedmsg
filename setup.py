@@ -27,6 +27,7 @@ setup(
         "stompest",
         "pyasn1",
         "click",
+        "pytz",
     ],
     packages=find_packages(),
     entry_points={

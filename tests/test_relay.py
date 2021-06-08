@@ -5,7 +5,8 @@ Authors:    Adam Williamson <awilliam@redhat.com>
 
 """
 
-import mock
+from unittest import mock
+
 import bugzilla2fedmsg.relay
 import fedora_messaging.exceptions
 
