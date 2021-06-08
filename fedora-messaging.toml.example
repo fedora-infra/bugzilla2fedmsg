@@ -16,6 +16,9 @@ certfile = "/my/client/cert.pem"
     # Example: failover:(tcp://remote1:61615,tcp://localhost:61616)?randomize=false,startupMaxReconnectAttempts=3,initialReconnectDelay=7,maxReconnectDelay=8,maxReconnectAttempts=0
     uri = "ssl://localhost:61612"
 
+    # Virtual Host
+    vhost = "/"
+
     # Authentication
     user = "username"
     pass = "password"

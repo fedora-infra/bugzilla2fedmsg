@@ -64,7 +64,7 @@ class BugzillaConsumer:
             heartbeats = (self._heartbeat, self._heartbeat)
 
         try:
-            self.stomp.connect(heartBeats=heartbeats)
+            self.stomp.connect(host=self._vhost, heartBeats=heartbeats)
         except StompConnectionError as e:
             if e.args[0].startswith("Already connected to "):
                 return
@@ -118,6 +118,7 @@ class BugzillaConsumer:
                 return
             self.stomp.beat()
             self.setup_heartbeat()
+
         delay = self._heartbeat - self._heartbeat / 10
         self._heartbeat_timer = threading.Timer(delay / 1000, _send_heartbeat)
         self._heartbeat_timer.start()
