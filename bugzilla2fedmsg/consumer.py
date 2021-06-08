@@ -9,38 +9,41 @@ import logging
 import ssl
 import threading
 
-from fedora_messaging.config import conf
 from stompest.config import StompConfig
 from stompest.error import StompConnectionError, StompProtocolError
 from stompest.protocol import StompSpec
 from stompest.sync import Stomp
 
-
 LOGGER = logging.getLogger(__name__)
 
 
 class BugzillaConsumer:
-    def __init__(self, relay):
+    def __init__(self, conf, relay):
         self.relay = relay
         self._running = False
         self._heartbeat_timer = None
+        self._conf = conf
 
         # Bugzilla
-        self.products = (
-            conf["consumer_config"]
-            .get("bugzilla", {})
-            .get("products", ["Fedora", "Fedora EPEL"])
+        self.products = self._conf.get("bugzilla", {}).get(
+            "products", ["Fedora", "Fedora EPEL"]
         )
 
         # STOMP
-        stomp_config = conf["consumer_config"].get("stomp", {})
+        stomp_config = self._conf.get("stomp", {})
         self._queue_name = stomp_config.get("queue", "/queue/fedora_from_esb")
         self._heartbeat = stomp_config.get("heartbeat")
-        ssl_context = ssl.create_default_context()
-        # Disable cert validation for demo only
-        ssl_context.check_hostname = False
-        ssl_context.verify_mode = ssl.CERT_NONE
-        ssl_context.load_cert_chain(stomp_config["ssl_crt"], stomp_config["ssl_key"])
+        self._vhost = stomp_config.get("vhost", "/")
+        if stomp_config.get("ssl_crt") and stomp_config.get("ssl_key"):
+            ssl_context = ssl.create_default_context()
+            # Disable cert validation for demo only
+            ssl_context.check_hostname = False
+            ssl_context.verify_mode = ssl.CERT_NONE
+            ssl_context.load_cert_chain(
+                stomp_config["ssl_crt"], stomp_config["ssl_key"]
+            )
+        else:
+            ssl_context = None
 
         stomp_config = StompConfig(
             stomp_config["uri"],

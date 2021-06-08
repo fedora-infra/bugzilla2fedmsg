@@ -1,6 +1,4 @@
 import pytest
-
-from fedora_messaging.config import conf
 from bugzilla2fedmsg.consumer import BugzillaConsumer
 from stompest.error import StompConnectionError, StompProtocolError
 from stompest.protocol import StompSpec
@@ -8,9 +6,28 @@ from stompest.protocol.frame import StompFrame
 
 
 @pytest.fixture
-def consumer(mocker):
+def consumer_config():
+    return {
+        "stomp": {
+            "uri": "tcp://localhost:61613",
+            "vhost": "/",
+            "user": "username",
+            "pass": "password",
+            "queue": "/queue/testing",
+            "heartbeat": 1000,
+            "prefetch_size": 100,
+        },
+        "bugzilla": {
+            "products": ["Fedora", "Fedora EPEL"],
+            "bz4compat": True,
+        },
+    }
+
+
+@pytest.fixture
+def consumer(mocker, consumer_config):
     relay = mocker.Mock(name="relay")
-    consumer = BugzillaConsumer(relay)
+    consumer = BugzillaConsumer(consumer_config, relay)
     # Stop after the first message
     relay.on_stomp_message.side_effect = lambda *args: consumer.stop()
     # Setup the transport

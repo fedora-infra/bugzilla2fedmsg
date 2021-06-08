@@ -27,7 +27,7 @@ def cli(config):
     # Now start the consumer.
     conf = fedora_messaging.config.conf["consumer_config"]
     relay = MessageRelay(conf)
-    consumer = BugzillaConsumer(relay)
+    consumer = BugzillaConsumer(conf, relay)
     while True:
         try:
             consumer.consume()
