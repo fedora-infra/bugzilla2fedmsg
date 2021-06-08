@@ -11,6 +11,7 @@ import threading
 
 from fedora_messaging.config import conf
 from stompest.config import StompConfig
+from stompest.error import StompConnectionError, StompProtocolError
 from stompest.protocol import StompSpec
 from stompest.sync import Stomp
 
@@ -52,13 +53,22 @@ class BugzillaConsumer:
 
         LOGGER.debug("Initialized bz2fm STOMP consumer.")
 
-    def consume(self):
+    def _connect(self):
         self._running = True
         LOGGER.debug("STOMP consumer is connecting...")
         heartbeats = None
         if self._heartbeat:
             heartbeats = (self._heartbeat, self._heartbeat)
-        self.stomp.connect(heartBeats=heartbeats)
+
+        try:
+            self.stomp.connect(heartBeats=heartbeats)
+        except StompConnectionError as e:
+            if e.args[0].startswith("Already connected to "):
+                return
+            raise
+
+        self.setup_heartbeat()
+
         headers = {
             # client-individual mode is necessary for concurrent processing
             # (requires ActiveMQ >= 5.2)
@@ -68,6 +78,9 @@ class BugzillaConsumer:
             headers["id"] = 0
         self.setup_heartbeat()
         self.stomp.subscribe(self._queue_name, headers)
+
+    def consume(self):
+        self._connect()
         LOGGER.info("STOMP consumer is ready")
         while self._running:
             frame = self.stomp.receiveFrame()
