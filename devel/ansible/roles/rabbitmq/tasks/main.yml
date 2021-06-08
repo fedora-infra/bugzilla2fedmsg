@@ -1,0 +1,30 @@
+---
+- name: Install RPM packages
+  dnf:
+    name:
+      - rabbitmq-server
+      - python3-policycoreutils
+    state: present
+
+- name: Add the management plugin
+  rabbitmq_plugin:
+    names: rabbitmq_management
+    state: enabled
+
+- name: Allow RabbitMQ to listen on the STOMP port
+  seport:
+    setype: rabbitmq_port_t
+    proto: tcp
+    ports: 61613
+    state: present
+
+- name: Add the STOMP plugin
+  rabbitmq_plugin:
+    names: rabbitmq_stomp
+    state: enabled
+
+- name: Enable RabbitMQ
+  systemd:
+    name: rabbitmq-server
+    state: started
+    enabled: yes

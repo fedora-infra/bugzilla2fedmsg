@@ -1,0 +1,9 @@
+# .bashrc
+
+export PATH=$PATH:/home/vagrant/.local/bin
+
+source /home/vagrant/venv/bin/activate
+
+export FEDORA_MESSAGING_CONF=/home/vagrant/bugzilla2fedmsg.toml
+
+cd "bugzilla2fedmsg"

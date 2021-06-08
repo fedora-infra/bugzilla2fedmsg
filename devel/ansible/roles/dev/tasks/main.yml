@@ -1,0 +1,43 @@
+---
+- name: Install RPM packages
+  dnf:
+      name:
+        - git
+        - vim
+        - python3-pip
+        - tox
+        - fedora-messaging
+        - "@Development Tools"
+        - tmux
+      state: present
+
+- name: install app
+  pip:
+    editable: true
+    virtualenv: /home/vagrant/venv
+    chdir: /home/vagrant/bugzilla2fedmsg/
+    name: .
+  become: yes
+  become_user: vagrant
+
+- name: install testing tools
+  pip:
+    virtualenv: /home/vagrant/venv
+    requirements: /home/vagrant/bugzilla2fedmsg/requirements-tests.txt
+  become: yes
+  become_user: vagrant
+
+- name: Install the .bashrc
+  copy:
+      src: bashrc
+      dest: /home/vagrant/.bashrc
+      mode: 0644
+      owner: vagrant
+      group: vagrant
+
+- name: Install the configuration file
+  copy:
+      src: config.toml
+      dest: /home/vagrant/bugzilla2fedmsg.toml
+      owner: vagrant
+      group: vagrant
