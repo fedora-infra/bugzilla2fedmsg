@@ -31,16 +31,16 @@ def _bz4_compat_transform(bug, event, objdict, obj):
     if bug.get("operating_system"):
         bug["op_sys"] = bug["operating_system"]
     if not bug.get("weburl"):
-        bug["weburl"] = "https://bugzilla.redhat.com/show_bug.cgi?id=%s" % bug['id']
+        bug["weburl"] = "https://bugzilla.redhat.com/show_bug.cgi?id=%s" % bug["id"]
     event["who"] = event["user"]["login"]
     event["changes"] = event.get("changes", [])
     for change in event["changes"]:
         change["field_name"] = change["field"]
-    if obj == 'comment':
+    if obj == "comment":
         # I would expect this to be real_name so we're not spaffing
         # email addresses all over, but I checked and historically
         # it was definitely login
-        objdict[obj]['author'] = event.get('user', {}).get('login', '')
+        objdict[obj]["author"] = event.get("user", {}).get("login", "")
 
 
 class MessageRelay:
@@ -61,18 +61,18 @@ class MessageRelay:
         # destination looks something like
         # "/topic/VirtualTopic.eng.bugzilla.bug.modify"
         # this splits out the 'bug' part
-        obj = headers['destination'].split('bugzilla.')[1].split('.')[0]
+        obj = headers["destination"].split("bugzilla.")[1].split(".")[0]
         if obj not in body:
             LOGGER.debug("DROP: message has no object field. Non public.")
             return
         objdict = {}
         bug = None
-        if obj == 'bug':
+        if obj == "bug":
             # just take the bug dict, converting datetimes
-            bug = convert_datetimes(body['bug'])
+            bug = convert_datetimes(body["bug"])
         else:
             # unpick the bug dict from the object dict
-            bug = convert_datetimes(body[obj].pop('bug'))
+            bug = convert_datetimes(body[obj].pop("bug"))
             objdict[obj] = convert_datetimes(body[obj])
 
         # As of https://bugzilla.redhat.com/show_bug.cgi?id=1248259, bugzilla
@@ -93,7 +93,7 @@ class MessageRelay:
             _bz4_compat_transform(bug, event, objdict, obj)
 
         topic = "bug.update"
-        if 'bug.create' in headers['destination']:
+        if "bug.create" in headers["destination"]:
             topic = "bug.new"
 
         # construct message dict, add the object dict we got earlier
@@ -105,7 +105,7 @@ class MessageRelay:
         )
         body.update(objdict)
 
-        LOGGER.debug("Republishing #%s" % bug['id'])
+        LOGGER.debug("Republishing #%s" % bug["id"])
         messageclass = MessageV1
         if self._bz4_compat_mode:
             messageclass = MessageV1BZ4
@@ -117,6 +117,8 @@ class MessageRelay:
             )
             publish(message)
         except PublishReturned as e:
-            LOGGER.warning("Fedora Messaging broker rejected message {}: {}".format(message.id, e))
+            LOGGER.warning(
+                "Fedora Messaging broker rejected message {}: {}".format(message.id, e)
+            )
         except ConnectionException as e:
             LOGGER.warning("Error sending message {}: {}".format(message.id, e))

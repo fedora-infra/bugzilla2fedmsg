@@ -20,10 +20,10 @@ class BaseMessage(message.Message):
     def summary(self):
         """A summary of the message."""
         (user, _) = email_to_fas(self._primary_email)
-        idx = self.bug['id']
-        title = self.bug['summary']
-        action = self.body['event']['action']
-        target = self.body['event']['target']
+        idx = self.bug["id"]
+        title = self.bug["summary"]
+        action = self.body["event"]["action"]
+        target = self.body["event"]["target"]
 
         if len(title) > 40:
             title = title[:40] + "..."
@@ -32,19 +32,21 @@ class BaseMessage(message.Message):
             tmpl = "{user} filed a new bug RHBZ#{idx} '{title}'"
             return tmpl.format(user=user, idx=idx, title=title)
 
-        elif self.body['event']['action'] == "create":
+        elif self.body["event"]["action"] == "create":
             tmpl = "{user} added {target} on RHBZ#{idx} '{title}'"
             return tmpl.format(user=user, target=target, idx=idx, title=title)
 
         # at this point 'action' must be "modify": we're modifying the
         # target
-        fields = [d['field'] for d in self.body['event'].get('changes', [])]
+        fields = [d["field"] for d in self.body["event"].get("changes", [])]
         fields = comma_join(fields)
         if target == "bug":
             tmpl = "{user} updated {fields} on RHBZ#{idx} '{title}'"
             return tmpl.format(user=user, fields=fields, idx=idx, title=title)
         tmpl = "{user} updated {fields} for {target} on RHBZ#{idx} '{title}'"
-        return tmpl.format(user=user, fields=fields, target=target, idx=idx, title=title)
+        return tmpl.format(
+            user=user, fields=fields, target=target, idx=idx, title=title
+        )
 
     @property
     def url(self):
@@ -53,7 +55,7 @@ class BaseMessage(message.Message):
         Returns:
             str: A relevant URL.
         """
-        return "https://bugzilla.redhat.com/show_bug.cgi?id={}".format(self.bug['id'])
+        return "https://bugzilla.redhat.com/show_bug.cgi?id={}".format(self.bug["id"])
 
     @property
     def app_icon(self):
@@ -78,14 +80,14 @@ class BaseMessage(message.Message):
         # these are Bugzilla components that are not Fedora packages
         # add any more you can think of
         notpackages = [
-            'distribution',
-            'LiveCD',
-            'LiveCD - FEL',
-            'LiveCD - Games',
-            'LiveCD - KDE',
-            'LiveCD - LXDE',
-            'LiveCD - Xfce',
-            'Package Review',
+            "distribution",
+            "LiveCD",
+            "LiveCD - FEL",
+            "LiveCD - Games",
+            "LiveCD - KDE",
+            "LiveCD - LXDE",
+            "LiveCD - Xfce",
+            "Package Review",
         ]
         if compname in notpackages:
             return []
@@ -101,7 +103,7 @@ class BaseMessage(message.Message):
         """The email for the primary user associated with the action
         that generated this message.
         """
-        return self.body['event']['user']['login']
+        return self.body["event"]["user"]["login"]
 
     @property
     def _all_emails(self):
@@ -114,27 +116,27 @@ class BaseMessage(message.Message):
         users.add(self._primary_email)
 
         # bug reporter and assignee
-        users.add(self.bug['reporter']['login'])
+        users.add(self.bug["reporter"]["login"])
         users.add(self.assigned_to_email)
 
-        for change in self.body['event'].get('changes', []):
-            if change['field'] == "cc":
+        for change in self.body["event"].get("changes", []):
+            if change["field"] == "cc":
                 # anyone added to CC list
-                for user in change['added'].split(','):
+                for user in change["added"].split(","):
                     user.strip()
                     if user:
                         users.add(user)
-            elif change['field'] == "flag.needinfo":
+            elif change["field"] == "flag.needinfo":
                 # anyone for whom a 'needinfo' flag is set
                 # this is extracting the email from a value like:
                 # "? (senrique@redhat.com)"
-                user = change['added'].split('(', 1)[1].rsplit(')', 1)[0]
+                user = change["added"].split("(", 1)[1].rsplit(")", 1)[0]
                 if user:
                     users.add(user)
 
         # Strip anything that made it in erroneously
         for user in list(users):
-            if user.endswith('lists.fedoraproject.org'):
+            if user.endswith("lists.fedoraproject.org"):
                 users.remove(user)
 
         users = list(users)
@@ -233,11 +235,31 @@ class MessageV1(BaseMessage):
                     },
                     "whiteboard": {"type": "string"},
                 },
-                "required": ["alias", "assigned_to", "classification", "component",
-                             "creation_time", "flags", "id", "is_private", "keywords",
-                             "last_change_time", "operating_system", "platform", "priority",
-                             "product", "qa_contact", "reporter", "resolution", "severity",
-                             "status", "summary", "url", "version", "whiteboard"],
+                "required": [
+                    "alias",
+                    "assigned_to",
+                    "classification",
+                    "component",
+                    "creation_time",
+                    "flags",
+                    "id",
+                    "is_private",
+                    "keywords",
+                    "last_change_time",
+                    "operating_system",
+                    "platform",
+                    "priority",
+                    "product",
+                    "qa_contact",
+                    "reporter",
+                    "resolution",
+                    "severity",
+                    "status",
+                    "summary",
+                    "url",
+                    "version",
+                    "whiteboard",
+                ],
             },
             "event": {
                 "description": "An object representing the event the message relates to",
@@ -260,8 +282,15 @@ class MessageV1(BaseMessage):
                         },
                     },
                 },
-                "required": ["action", "bug_id", "change_set", "routing_key", "target",
-                             "time", "user"],
+                "required": [
+                    "action",
+                    "bug_id",
+                    "change_set",
+                    "routing_key",
+                    "target",
+                    "time",
+                    "user",
+                ],
             },
             "comment": {
                 "description": "An object representing a comment affected by the event",
@@ -289,9 +318,18 @@ class MessageV1(BaseMessage):
                     "is_private": {"type": "boolean"},
                     "last_change_time": {"type": "number"},
                 },
-                "required": ["content_type", "creation_time", "description", "file_name",
-                             "flags", "id", "is_obsolete", "is_patch", "is_private",
-                             "last_change_time"],
+                "required": [
+                    "content_type",
+                    "creation_time",
+                    "description",
+                    "file_name",
+                    "flags",
+                    "id",
+                    "is_obsolete",
+                    "is_patch",
+                    "is_private",
+                    "last_change_time",
+                ],
             },
         },
         "required": ["bug", "event"],
@@ -300,22 +338,22 @@ class MessageV1(BaseMessage):
     @property
     def bug(self):
         """The bug dictionary from the message."""
-        return self.body['bug']
+        return self.body["bug"]
 
     @property
     def assigned_to_email(self):
         """The email address of the user to which the bug is assigned."""
-        return self.bug['assigned_to']['login']
+        return self.bug["assigned_to"]["login"]
 
     @property
     def component_name(self):
         """The name of the component against which the bug is filed."""
-        return self.bug['component']['name']
+        return self.bug["component"]["name"]
 
     @property
     def product_name(self):
         """The name of the product against which the bug is filed."""
-        return self.bug['product']['name']
+        return self.bug["product"]["name"]
 
 
 class MessageV1BZ4(MessageV1):
@@ -345,19 +383,19 @@ class MessageV1BZ4(MessageV1):
     @property
     def bug(self):
         """The bug dictionary from the message."""
-        return self.body['bug']
+        return self.body["bug"]
 
     @property
     def assigned_to_email(self):
         """The email address of the user to which the bug is assigned."""
-        return self.bug['assigned_to']
+        return self.bug["assigned_to"]
 
     @property
     def component_name(self):
         """The name of the component against which the bug is filed."""
-        return self.bug['component']
+        return self.bug["component"]
 
     @property
     def product_name(self):
         """The name of the product against which the bug is filed."""
-        return self.bug['product']
+        return self.bug["product"]

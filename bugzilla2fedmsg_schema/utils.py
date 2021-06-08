@@ -2,7 +2,7 @@
 
 
 def comma_join(fields, oxford=True):
-    """ Join together words. """
+    """Join together words."""
 
     def fmt(field):
         return "'%s'" % field
@@ -30,6 +30,6 @@ def email_to_fas(email):
     we can just do this easily. For all other addresses, we really
     need that full feature added to fedora-messaging.
     """
-    if email.endswith('@fedoraproject.org'):
-        return (email.rsplit('@', 1)[0], True)
+    if email.endswith("@fedoraproject.org"):
+        return (email.rsplit("@", 1)[0], True)
     return (email, False)

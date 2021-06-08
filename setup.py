@@ -4,13 +4,13 @@ from setuptools import setup, find_packages
 
 
 setup(
-    name='bugzilla2fedmsg',
-    version='1.0.0',
-    description='Consume Bugzilla messages over STOMP and republish to Fedora Messaging',
-    license='LGPLv2+',
-    author='Ralph Bean',
-    author_email='rbean@redhat.com',
-    url='https://github.com/fedora-infra/bugzilla2fedmsg',
+    name="bugzilla2fedmsg",
+    version="1.0.0",
+    description="Consume Bugzilla messages over STOMP and republish to Fedora Messaging",
+    license="LGPLv2+",
+    author="Ralph Bean",
+    author_email="rbean@redhat.com",
+    url="https://github.com/fedora-infra/bugzilla2fedmsg",
     # Possible options are at https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
         "Development Status :: 5 - Production/Stable",
