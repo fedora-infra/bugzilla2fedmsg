@@ -78,3 +78,22 @@ def test_connect_twice(consumer, connected_frame, message_frame):
         consumer.consume()
     except StompConnectionError as e:
         assert False, "Must not fail when already connected: {}".format(e)
+
+
+def test_subscribe_twice(consumer, connected_frame, message_frame):
+    transport_factory = consumer.stomp._transportFactory
+    transport = transport_factory.return_value
+    transport.messages.append(connected_frame)
+    transport.messages.append(StompConnectionError("test disconnect"))
+    try:
+        consumer.consume()
+    except StompConnectionError:
+        pass
+    consumer.stomp._transport = None
+    consumer.stomp.session._state = consumer.stomp.session.DISCONNECTED
+    transport.messages.append(connected_frame)
+    transport.messages.append(message_frame)
+    try:
+        consumer.consume()
+    except StompProtocolError as e:
+        assert False, "Must not fail when already subscribed: {}".format(e)

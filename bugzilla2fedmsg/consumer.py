@@ -76,8 +76,12 @@ class BugzillaConsumer:
         }
         if self.stomp.session.version == StompSpec.VERSION_1_2:
             headers["id"] = 0
-        self.setup_heartbeat()
-        self.stomp.subscribe(self._queue_name, headers)
+        try:
+            self.stomp.subscribe(self._queue_name, headers)
+        except StompProtocolError as e:
+            if e.args[0].startswith("Already subscribed "):
+                return
+            raise
 
     def consume(self):
         self._connect()
