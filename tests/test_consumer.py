@@ -1,8 +1,9 @@
 import pytest
-from bugzilla2fedmsg.consumer import BugzillaConsumer
 from stompest.error import StompConnectionError, StompProtocolError
 from stompest.protocol import StompSpec
 from stompest.protocol.frame import StompFrame
+
+from bugzilla2fedmsg.consumer import BugzillaConsumer
 
 
 @pytest.fixture

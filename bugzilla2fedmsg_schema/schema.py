@@ -4,6 +4,7 @@ import copy
 
 from fedora_messaging import message
 from fedora_messaging.schema_utils import libravatar_url
+
 from .utils import comma_join, email_to_fas
 
 

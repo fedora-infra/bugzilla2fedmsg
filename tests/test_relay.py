@@ -7,8 +7,9 @@ Authors:    Adam Williamson <awilliam@redhat.com>
 
 from unittest import mock
 
-import bugzilla2fedmsg.relay
 import fedora_messaging.exceptions
+
+import bugzilla2fedmsg.relay
 
 
 class TestRelay(object):

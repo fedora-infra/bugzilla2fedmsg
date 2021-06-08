@@ -7,9 +7,10 @@ Authors:    Adam Williamson <awilliam@redhat.com>
 
 from unittest import mock
 
-import bugzilla2fedmsg.relay
 import pytest
 from jsonschema.exceptions import ValidationError
+
+import bugzilla2fedmsg.relay
 
 
 class TestSchemas(object):
