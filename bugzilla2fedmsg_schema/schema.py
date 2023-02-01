@@ -144,6 +144,15 @@ class BaseMessage(message.Message):
         users.sort()
         return users
 
+    @property
+    def agent_name(self):
+        """Return the name of the user who reported the bug message"""
+        return self.body["bug"]["reporter"]["real_name"]
+
+    @property
+    def app_name(self):
+        return "bugzilla2fedmsg"
+
 
 class MessageV1(BaseMessage):
     """

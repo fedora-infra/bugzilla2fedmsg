@@ -52,6 +52,8 @@ class TestSchemas(object):
             message.app_icon
             == "https://bugzilla.redhat.com/extensions/RedHat/web/css/favicon.ico?v=0"
         )
+        assert message.agent_name == "Doncho Gunchev"
+        assert message.app_name == "bugzilla2fedmsg"
         # broken till we can do email2fas
         assert message.usernames == []
         assert message.packages == ["selinux-policy"]
