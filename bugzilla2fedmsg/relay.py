@@ -50,7 +50,6 @@ class MessageRelay:
         self._bz4_compat_mode = self.config.get("bugzilla", {}).get("bz4compat", True)
 
     def on_stomp_message(self, body, headers):
-
         # in BZ 5.0+, public messages include a key for the 'object',
         # whatever the object is. So 'bug.*' messages have a 'bug'
         # dict...but 'comment.*' messages have a 'comment' dict,
