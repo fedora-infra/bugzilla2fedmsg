@@ -2,11 +2,10 @@ import datetime
 import logging
 
 import pytz
+from bugzilla2fedmsg_schema import MessageV1, MessageV1BZ4
 from fedora_messaging.api import publish
 from fedora_messaging.exceptions import ConnectionException, PublishReturned
 from fedora_messaging.message import INFO
-
-from bugzilla2fedmsg_schema.schema import MessageV1, MessageV1BZ4
 
 from .utils import convert_datetimes
 
