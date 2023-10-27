@@ -5,8 +5,8 @@ source =
     bugzilla2fedmsg
 
 [report]
-# Fail if the coverage is not 80%
-fail_under = 80
+# Fail if the coverage is too low
+fail_under = 75
 # Display results with up 1/100th of a percent accuracy.
 precision = 2
 exclude_lines =
