@@ -39,3 +39,7 @@ def cli(config):
         except KeyboardInterrupt:
             consumer.stop()
             raise
+
+
+if __name__ == '__main__':
+    cli()
