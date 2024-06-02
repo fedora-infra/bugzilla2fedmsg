@@ -1,5 +1,6 @@
 import os
 import time
+import logging
 
 import click
 import fedora_messaging
@@ -7,6 +8,7 @@ from stompest.error import StompConnectionError
 
 from .consumer import BugzillaConsumer
 from .relay import MessageRelay
+LOGGER = logging.getLogger(__name__)
 
 
 @click.command()
@@ -31,8 +33,8 @@ def cli(config):
     while True:
         try:
             consumer.consume()
-        except StompConnectionError as e:
-            click.echo("Disconnected: {}".format(e))
+        except StompConnectionError:
+            LOGGER.exception("Disconnected: ")
             time.sleep(3)
         except KeyboardInterrupt:
             consumer.stop()
