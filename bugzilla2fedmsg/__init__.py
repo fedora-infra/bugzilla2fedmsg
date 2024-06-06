@@ -7,8 +7,10 @@ import click
 import fedora_messaging
 from stompest.error import StompConnectionError
 
-from .consumer import BugzillaConsumer
-from .relay import MessageRelay
+from bugzilla2fedmsg.consumer import BugzillaConsumer
+from bugzilla2fedmsg.relay import MessageRelay
+
+
 LOGGER = logging.getLogger(__name__)
 
 
