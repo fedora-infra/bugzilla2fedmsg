@@ -1,4 +1,0 @@
-include *.example *.rst
-include LICENSE
-include tox.ini
-graft tests
