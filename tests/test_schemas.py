@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """ Tests for bugzilla2fedmsg_schemas.
 
 Authors:    Adam Williamson <awilliam@redhat.com>
@@ -13,7 +12,7 @@ from jsonschema.exceptions import ValidationError
 import bugzilla2fedmsg.relay
 
 
-class TestSchemas(object):
+class TestSchemas:
     # We are basically going to use the relays to construct messages
     # just as we do in test_relay, then check the messages validate
     # and test the various schema methods. We parametrize the tests
@@ -29,9 +28,7 @@ class TestSchemas(object):
     @mock.patch("bugzilla2fedmsg.relay.publish", autospec=True)
     def test_bug_create_schema(self, fakepublish, bug_create_message, relay):
         """Check bug.create message schema bits."""
-        relay.on_stomp_message(
-            bug_create_message["body"], bug_create_message["headers"]
-        )
+        relay.on_stomp_message(bug_create_message["body"], bug_create_message["headers"])
         assert fakepublish.call_count == 1
         message = fakepublish.call_args[0][0]
         # this should not raise an exception
@@ -68,9 +65,7 @@ class TestSchemas(object):
     @mock.patch("bugzilla2fedmsg.relay.publish", autospec=True)
     def test_bug_modify_schema(self, fakepublish, bug_modify_message, relay):
         """Check bug.modify message schema bits."""
-        relay.on_stomp_message(
-            bug_modify_message["body"], bug_modify_message["headers"]
-        )
+        relay.on_stomp_message(bug_modify_message["body"], bug_modify_message["headers"])
         assert fakepublish.call_count == 1
         message = fakepublish.call_args[0][0]
         # this should not raise an exception
@@ -152,9 +147,7 @@ class TestSchemas(object):
         # wipe the 'changes' dict from the sample message, to simulate
         # one of these broken messages
         del bug_modify_message["body"]["event"]["changes"]
-        relay.on_stomp_message(
-            bug_modify_message["body"], bug_modify_message["headers"]
-        )
+        relay.on_stomp_message(bug_modify_message["body"], bug_modify_message["headers"])
         assert fakepublish.call_count == 1
         message = fakepublish.call_args[0][0]
         # this should not raise an exception
@@ -172,9 +165,7 @@ class TestSchemas(object):
     @mock.patch("bugzilla2fedmsg.relay.publish", autospec=True)
     def test_comment_create_schema(self, fakepublish, comment_create_message, relay):
         """Check comment.create message schema bits."""
-        relay.on_stomp_message(
-            comment_create_message["body"], comment_create_message["headers"]
-        )
+        relay.on_stomp_message(comment_create_message["body"], comment_create_message["headers"])
         assert fakepublish.call_count == 1
         message = fakepublish.call_args[0][0]
         # this should not raise an exception
@@ -186,9 +177,7 @@ class TestSchemas(object):
 
     @pytest.mark.parametrize("relay", (bz4relay, nobz4relay))
     @mock.patch("bugzilla2fedmsg.relay.publish", autospec=True)
-    def test_attachment_create_schema(
-        self, fakepublish, attachment_create_message, relay
-    ):
+    def test_attachment_create_schema(self, fakepublish, attachment_create_message, relay):
         """Check attachment.create message schema bits."""
         relay.on_stomp_message(
             attachment_create_message["body"], attachment_create_message["headers"]
@@ -204,9 +193,7 @@ class TestSchemas(object):
 
     @pytest.mark.parametrize("relay", (bz4relay, nobz4relay))
     @mock.patch("bugzilla2fedmsg.relay.publish", autospec=True)
-    def test_attachment_modify_schema(
-        self, fakepublish, attachment_modify_message, relay
-    ):
+    def test_attachment_modify_schema(self, fakepublish, attachment_modify_message, relay):
         """Check attachment.modify message schema bits."""
         relay.on_stomp_message(
             attachment_modify_message["body"], attachment_modify_message["headers"]
@@ -252,9 +239,7 @@ class TestSchemas(object):
         # adjust the component in the sample message to one we should
         # filter out
         bug_create_message["body"]["bug"]["component"]["name"] = "distribution"
-        relay.on_stomp_message(
-            bug_create_message["body"], bug_create_message["headers"]
-        )
+        relay.on_stomp_message(bug_create_message["body"], bug_create_message["headers"])
         assert fakepublish.call_count == 1
         message = fakepublish.call_args[0][0]
         # this should not raise an exception
@@ -266,14 +251,12 @@ class TestSchemas(object):
     def test_bug_no_qa_contact(self, fakepublish, bug_create_message, relay):
         """Check bug.create message schema bits when qa_contact is None."""
         bug_create_message["body"]["bug"]["qa_contact"] = None
-        relay.on_stomp_message(
-            bug_create_message["body"], bug_create_message["headers"]
-        )
+        relay.on_stomp_message(bug_create_message["body"], bug_create_message["headers"])
         assert fakepublish.call_count == 1
         message = fakepublish.call_args[0][0]
         # this should not raise an exception
         try:
             message.validate()
         except ValidationError as e:
-            assert False, e
+            pytest.fail(e)
         assert message.bug["qa_contact"] is None

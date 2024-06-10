@@ -1,7 +1,6 @@
 import logging
 import os
 import time
-import logging
 
 import click
 import fedora_messaging
@@ -15,18 +14,16 @@ LOGGER = logging.getLogger(__name__)
 
 
 @click.command()
-@click.option(
-    "-c", "--config", envvar="FEDORA_MESSAGING_CONF", help="Configuration file"
-)
+@click.option("-c", "--config", envvar="FEDORA_MESSAGING_CONF", help="Configuration file")
 def cli(config):
     """Relay Bugzilla changes into Fedora Messaging."""
     if config:
         if not os.path.isfile(config):
-            raise click.exceptions.BadParameter("{} is not a file".format(config))
+            raise click.exceptions.BadParameter(f"{config} is not a file")
         try:
             fedora_messaging.config.conf.load_config(config_path=config)
         except fedora_messaging.exceptions.ConfigurationException as e:
-            raise click.exceptions.BadParameter(str(e))
+            raise click.exceptions.BadParameter(str(e)) from e
     fedora_messaging.config.conf.setup_logging()
 
     # Now start the consumer.

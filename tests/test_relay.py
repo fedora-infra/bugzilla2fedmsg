@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """ Tests for bugzilla2fedmsg.relay.
 
 Authors:    Adam Williamson <awilliam@redhat.com>
@@ -12,7 +11,7 @@ import fedora_messaging.exceptions
 import bugzilla2fedmsg.relay
 
 
-class TestRelay(object):
+class TestRelay:
     relay = bugzilla2fedmsg.relay.MessageRelay(
         {"bugzilla": {"products": ["Fedora", "Fedora EPEL"]}}
     )
@@ -20,9 +19,7 @@ class TestRelay(object):
     @mock.patch("bugzilla2fedmsg.relay.publish", autospec=True)
     def test_bug_create(self, fakepublish, bug_create_message):
         """Check correct result for bug.create message."""
-        self.relay.on_stomp_message(
-            bug_create_message["body"], bug_create_message["headers"]
-        )
+        self.relay.on_stomp_message(bug_create_message["body"], bug_create_message["headers"])
         assert fakepublish.call_count == 1
         message = fakepublish.call_args[0][0]
         assert message.topic == "bugzilla.bug.new"
@@ -35,9 +32,7 @@ class TestRelay(object):
     @mock.patch("bugzilla2fedmsg.relay.publish", autospec=True)
     def test_bug_modify(self, fakepublish, bug_modify_message):
         """Check correct result for bug.modify message."""
-        self.relay.on_stomp_message(
-            bug_modify_message["body"], bug_modify_message["headers"]
-        )
+        self.relay.on_stomp_message(bug_modify_message["body"], bug_modify_message["headers"])
         assert fakepublish.call_count == 1
         message = fakepublish.call_args[0][0]
         assert message.topic == "bugzilla.bug.update"
@@ -128,9 +123,7 @@ class TestRelay(object):
         config, the products we care about are the defaults: 'Fedora'
         and 'Fedora EPEL'.
         """
-        self.relay.on_stomp_message(
-            other_product_message["body"], other_product_message["headers"]
-        )
+        self.relay.on_stomp_message(other_product_message["body"], other_product_message["headers"])
         assert fakepublish.call_count == 0
 
     @mock.patch("bugzilla2fedmsg.relay.publish", autospec=True)
@@ -142,9 +135,7 @@ class TestRelay(object):
         bz4relay = bugzilla2fedmsg.relay.MessageRelay(
             {"bugzilla": {"products": ["Fedora", "Fedora EPEL"], "bz4compat": True}}
         )
-        bz4relay.on_stomp_message(
-            bug_create_message["body"], bug_create_message["headers"]
-        )
+        bz4relay.on_stomp_message(bug_create_message["body"], bug_create_message["headers"])
         assert fakepublish.call_count == 1
         message = fakepublish.call_args[0][0]
         assert message.body["bug"]["assigned_to"] == "lvrabec@redhat.com"
@@ -155,8 +146,7 @@ class TestRelay(object):
         assert message.body["bug"]["op_sys"] == "Unspecified"
         assert message.body["event"]["who"] == "dgunchev@gmail.com"
         assert (
-            message.body["bug"]["weburl"]
-            == "https://bugzilla.redhat.com/show_bug.cgi?id=1701391"
+            message.body["bug"]["weburl"] == "https://bugzilla.redhat.com/show_bug.cgi?id=1701391"
         )
         # we need a comment message to test this
         fakepublish.reset_mock()
@@ -168,9 +158,7 @@ class TestRelay(object):
         assert message.body["comment"]["author"] == "smooge@redhat.com"
 
     @mock.patch("bugzilla2fedmsg.relay.publish", autospec=True)
-    def test_bz4_compat_disabled(
-        self, fakepublish, bug_create_message, comment_create_message
-    ):
+    def test_bz4_compat_disabled(self, fakepublish, bug_create_message, comment_create_message):
         """Test that we *don't* make Bugzilla 4 compat modifications
         if the option is switched off. Tests only the destructive ones
         as they're the ones we really want to avoid, and if these
@@ -179,49 +167,36 @@ class TestRelay(object):
         nobz4relay = bugzilla2fedmsg.relay.MessageRelay(
             {"bugzilla": {"products": ["Fedora", "Fedora EPEL"], "bz4compat": False}}
         )
-        nobz4relay.on_stomp_message(
-            bug_create_message["body"], bug_create_message["headers"]
-        )
+        nobz4relay.on_stomp_message(bug_create_message["body"], bug_create_message["headers"])
         assert fakepublish.call_count == 1
         message = fakepublish.call_args[0][0]
         assert all(
-            item in message.body["bug"]["assigned_to"]
-            for item in ("login", "id", "real_name")
+            item in message.body["bug"]["assigned_to"] for item in ("login", "id", "real_name")
         )
         assert all(item in message.body["bug"]["component"] for item in ("id", "name"))
         assert all(item in message.body["bug"]["product"] for item in ("id", "name"))
 
     @mock.patch("bugzilla2fedmsg.relay.publish", autospec=True)
-    def test_publish_exception_publishreturned(
-        self, fakepublish, bug_create_message, caplog
-    ):
+    def test_publish_exception_publishreturned(self, fakepublish, bug_create_message, caplog):
         """Check that we handle PublishReturned exception from publish
         correctly.
         """
         fakepublish.side_effect = fedora_messaging.exceptions.PublishReturned("oops!")
         # this should not raise any exception
-        self.relay.on_stomp_message(
-            bug_create_message["body"], bug_create_message["headers"]
-        )
+        self.relay.on_stomp_message(bug_create_message["body"], bug_create_message["headers"])
         assert fakepublish.call_count == 1
         # check the logging worked
         assert "Fedora Messaging broker rejected message" in caplog.text
 
     @mock.patch("bugzilla2fedmsg.relay.publish", autospec=True)
-    def test_publish_exception_connectionexception(
-        self, fakepublish, bug_create_message, caplog
-    ):
+    def test_publish_exception_connectionexception(self, fakepublish, bug_create_message, caplog):
         """Check that we handle ConnectionException from publish
         correctly.
         """
         # First test PublishReturned
-        fakepublish.side_effect = fedora_messaging.exceptions.ConnectionException(
-            "oops!"
-        )
+        fakepublish.side_effect = fedora_messaging.exceptions.ConnectionException("oops!")
         # this should not raise any exception
-        self.relay.on_stomp_message(
-            bug_create_message["body"], bug_create_message["headers"]
-        )
+        self.relay.on_stomp_message(bug_create_message["body"], bug_create_message["headers"])
         assert fakepublish.call_count == 1
         # check the logging worked
         assert "Error sending message" in caplog.text

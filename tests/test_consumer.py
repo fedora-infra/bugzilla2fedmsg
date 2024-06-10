@@ -95,7 +95,7 @@ def test_connect_twice(consumer, connected_frame, message_frame):
     try:
         consumer.consume()
     except StompConnectionError as e:
-        assert False, "Must not fail when already connected: {}".format(e)
+        pytest.fail(f"Must not fail when already connected: {e}")
 
 
 def test_subscribe_twice(consumer, connected_frame, message_frame):
@@ -114,4 +114,4 @@ def test_subscribe_twice(consumer, connected_frame, message_frame):
     try:
         consumer.consume()
     except StompProtocolError as e:
-        assert False, "Must not fail when already subscribed: {}".format(e)
+        pytest.fail(f"Must not fail when already subscribed: {e}")

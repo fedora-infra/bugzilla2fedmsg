@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """ Test fixtures for bugzilla2fedmsg.relay.
 
 Authors:    Adam Williamson <awilliam@redhat.com>

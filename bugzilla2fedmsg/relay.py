@@ -30,7 +30,7 @@ def _bz4_compat_transform(bug, event, objdict, obj):
     if bug.get("operating_system"):
         bug["op_sys"] = bug["operating_system"]
     if not bug.get("weburl"):
-        bug["weburl"] = "https://bugzilla.redhat.com/show_bug.cgi?id=%s" % bug["id"]
+        bug["weburl"] = f"https://bugzilla.redhat.com/show_bug.cgi?id={bug['id']}"
     event["who"] = event["user"]["login"]
     event["changes"] = event.get("changes", [])
     for change in event["changes"]:
@@ -78,7 +78,7 @@ class MessageRelay:
         # it.
         product_name = bug["product"]["name"]
         if product_name not in self._allowed_products:
-            LOGGER.debug("DROP: %r not in %r" % (product_name, self._allowed_products))
+            LOGGER.debug("DROP: %r not in %r", product_name, self._allowed_products)
             return
 
         body["timestamp"] = datetime.datetime.fromtimestamp(
@@ -103,20 +103,18 @@ class MessageRelay:
         )
         body.update(objdict)
 
-        LOGGER.debug("Republishing #%s" % bug["id"])
+        LOGGER.debug("Republishing #%s", bug["id"])
         messageclass = MessageV1
         if self._bz4_compat_mode:
             messageclass = MessageV1BZ4
         try:
             message = messageclass(
-                topic="bugzilla.{}".format(topic),
+                topic=f"bugzilla.{topic}",
                 body=body,
                 severity=INFO,
             )
             publish(message)
         except PublishReturned as e:
-            LOGGER.warning(
-                "Fedora Messaging broker rejected message {}: {}".format(message.id, e)
-            )
+            LOGGER.warning(f"Fedora Messaging broker rejected message {message.id}: {e}")
         except ConnectionException as e:
-            LOGGER.warning("Error sending message {}: {}".format(message.id, e))
+            LOGGER.warning(f"Error sending message {message.id}: {e}")

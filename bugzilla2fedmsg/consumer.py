@@ -26,9 +26,7 @@ class BugzillaConsumer:
         self._conf = conf
 
         # Bugzilla
-        self.products = self._conf.get("bugzilla", {}).get(
-            "products", ["Fedora", "Fedora EPEL"]
-        )
+        self.products = self._conf.get("bugzilla", {}).get("products", ["Fedora", "Fedora EPEL"])
 
         # STOMP
         stomp_config = self._conf.get("stomp", {})
@@ -40,9 +38,7 @@ class BugzillaConsumer:
             # Disable cert validation for demo only
             ssl_context.check_hostname = False
             ssl_context.verify_mode = ssl.CERT_NONE
-            ssl_context.load_cert_chain(
-                stomp_config["ssl_crt"], stomp_config["ssl_key"]
-            )
+            ssl_context.load_cert_chain(stomp_config["ssl_crt"], stomp_config["ssl_key"])
         else:
             ssl_context = None
 
@@ -96,7 +92,7 @@ class BugzillaConsumer:
                 continue
             body = json.loads(frame.body.decode())
             msg_id = frame.headers.get(StompSpec.MESSAGE_ID_HEADER)
-            LOGGER.debug("Received message on STOMP with ID {}".format(msg_id))
+            LOGGER.debug(f"Received message on STOMP with ID {msg_id}")
             try:
                 self.relay.on_stomp_message(body, frame.headers)
             except Exception:
