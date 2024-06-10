@@ -127,9 +127,9 @@ class TestSchemas(object):
         comma_join path).
         """
         # Just dump two changes from the 'four changes' message
-        bug_modify_message_four_changes["body"]["event"][
-            "changes"
-        ] = bug_modify_message_four_changes["body"]["event"]["changes"][:2]
+        bug_modify_message_four_changes["body"]["event"]["changes"] = (
+            bug_modify_message_four_changes["body"]["event"]["changes"][:2]
+        )
         relay.on_stomp_message(
             bug_modify_message_four_changes["body"],
             bug_modify_message_four_changes["headers"],
