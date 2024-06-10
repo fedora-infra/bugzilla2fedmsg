@@ -99,8 +99,8 @@ class BugzillaConsumer:
             LOGGER.debug("Received message on STOMP with ID {}".format(msg_id))
             try:
                 self.relay.on_stomp_message(body, frame.headers)
-            except Exception as ex:
-                LOGGER.exception(ex)
+            except Exception:
+                LOGGER.exception("Exception when relaying the message:")
                 self.stomp.nack(frame)
             else:
                 self.stomp.ack(frame)
