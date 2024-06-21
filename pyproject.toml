@@ -38,6 +38,7 @@ stompest = "^2.3.0"
 pyasn1 = "^0.6.0"
 pytz = ">=2024.1"
 bugzilla2fedmsg-schema = "^1.0.0"
+fasjson-client = "^1.0.8"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=7.0.0"

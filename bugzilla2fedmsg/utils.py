@@ -35,3 +35,13 @@ def convert_datetimes(obj):
             return ourdate.timestamp()
         except (ValueError, TypeError):
             return obj
+
+
+def email_to_fas(email, fasjson):
+    """Try to get a FAS username from an email address, return None if no FAS username is found"""
+    if email.endswith("@fedoraproject.org"):
+        return email.rsplit("@", 1)[0]
+    results = fasjson.search(rhbzemail=email).result
+    if len(results) == 1:
+        return results[0]["username"]
+    return None

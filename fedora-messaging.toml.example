@@ -10,6 +10,7 @@ keyfile = "/my/client/key.pem"
 certfile = "/my/client/cert.pem"
 
 [consumer_config]
+    fasjson_url = "https://fasjson.fedoraproject.org"
     [consumer_config.stomp]
     # Broker URI
     # http://nikipore.github.io/stompest/protocol.html#stompest.protocol.failover.StompFailoverUri
