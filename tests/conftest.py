@@ -4,7 +4,40 @@ Authors:    Adam Williamson <awilliam@redhat.com>
 
 """
 
+from types import SimpleNamespace
+from unittest import mock
+
 import pytest
+
+
+@pytest.fixture
+def fakepublish():
+    with mock.patch("bugzilla2fedmsg.relay.publish", autospec=True) as _mock:
+        yield _mock
+
+
+FASJSON_USER_MAP = {
+    "dgunchev@gmail.com": "dgunchev",
+    "lvrabec@redhat.com": "lv",
+    "awilliam@redhat.com": "adamw",
+    "peter@sonniger-tag.eu": "peter",
+    "joequant@gmail.com": "joe",
+}
+
+
+@pytest.fixture
+def fakefasjson():
+    client = mock.Mock(name="fasjson")
+
+    def _search(rhbzemail):
+        try:
+            return SimpleNamespace(result=[{"username": FASJSON_USER_MAP[rhbzemail]}])
+        except KeyError:
+            return SimpleNamespace(result=[])
+
+    client.search.side_effect = _search
+    with mock.patch("bugzilla2fedmsg.relay.FasjsonClient", return_value=client):
+        yield client
 
 
 @pytest.fixture(scope="function")

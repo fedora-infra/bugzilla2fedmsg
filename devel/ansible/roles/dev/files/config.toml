@@ -10,6 +10,8 @@ amqp_url = "amqp://"
 # certfile = "/my/client/cert.pem"
 
 [consumer_config]
+    fasjson_url = "https://fasjson.tinystage.test"
+
     [consumer_config.stomp]
     # Broker URI
     # http://nikipore.github.io/stompest/protocol.html#stompest.protocol.failover.StompFailoverUri

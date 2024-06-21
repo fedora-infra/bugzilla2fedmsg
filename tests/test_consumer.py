@@ -9,6 +9,7 @@ from bugzilla2fedmsg.consumer import BugzillaConsumer
 @pytest.fixture
 def consumer_config():
     return {
+        "fasjson_url": "https://fasjson.example.com",
         "stomp": {
             "uri": "tcp://localhost:61613",
             "vhost": "/",
