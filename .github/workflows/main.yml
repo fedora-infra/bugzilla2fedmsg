@@ -43,6 +43,9 @@ jobs:
     container: fedorapython/fedora-python-tox:latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Needed for diff-cover
+          fetch-depth: 0
 
       - name: Install dependencies
         run: |
