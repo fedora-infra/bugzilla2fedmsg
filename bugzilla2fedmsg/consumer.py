@@ -114,6 +114,7 @@ class BugzillaConsumer:
         def _send_heartbeat():
             if not self._running:
                 return
+            LOGGER.debug("Sending heartbeat")
             self.stomp.beat()
             self.setup_heartbeat()
 
