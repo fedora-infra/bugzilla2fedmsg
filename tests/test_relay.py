@@ -213,3 +213,31 @@ def test_publish_exception_connectionexception(testrelay, fakepublish, bug_creat
     assert fakepublish.call_count == 1
     # check the logging worked
     assert "Error sending message" in caplog.text
+
+
+def test_needinfo_removed(testrelay, fakepublish, bug_modify_message_four_changes):
+    bug_modify_message_four_changes["body"]["event"]["changes"][2] = {
+        "field": "cc",
+        "removed": "",
+        "added": "awilliam@redhat.com",
+    }
+    bug_modify_message_four_changes["body"]["event"]["changes"][3]["added"] = ""
+    testrelay.on_stomp_message(
+        bug_modify_message_four_changes["body"], bug_modify_message_four_changes["headers"]
+    )
+    assert fakepublish.call_count == 1
+    message = fakepublish.call_args[0][0]
+    assert message.body["agent_name"] is None
+    assert message.body["usernames"] == ["adamw"]
+
+
+def test_needinfo_bad(testrelay, fakepublish, bug_modify_message_four_changes):
+    last_change = bug_modify_message_four_changes["body"]["event"]["changes"][3]
+    last_change["added"] = "some garbage"
+    try:
+        testrelay.on_stomp_message(
+            bug_modify_message_four_changes["body"], bug_modify_message_four_changes["headers"]
+        )
+    except IndexError as e:
+        pytest.fail(e)
+    assert fakepublish.call_count == 1

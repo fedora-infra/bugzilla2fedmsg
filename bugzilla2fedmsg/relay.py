@@ -8,7 +8,7 @@ from fedora_messaging.api import publish
 from fedora_messaging.exceptions import ConnectionException, PublishReturned
 from fedora_messaging.message import INFO
 
-from .utils import convert_datetimes, email_to_fas
+from .utils import convert_datetimes, email_to_fas, needinfo_email
 
 
 LOGGER = logging.getLogger(__name__)
@@ -172,9 +172,7 @@ class MessageRelay:
                         emails.add(email)
             elif change["field"] == "flag.needinfo":
                 # anyone for whom a 'needinfo' flag is set
-                # this is extracting the email from a value like:
-                # "? (senrique@redhat.com)"
-                email = change["added"].split("(", 1)[1].rsplit(")", 1)[0]
+                email = needinfo_email(change["added"])
                 if email:
                     emails.add(email)
 

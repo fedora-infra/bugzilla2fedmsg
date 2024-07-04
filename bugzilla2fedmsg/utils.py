@@ -37,6 +37,16 @@ def convert_datetimes(obj):
             return obj
 
 
+def needinfo_email(flag_content):
+    # this is extracting the email from a value like:
+    # "? (senrique@redhat.com)"
+    try:
+        return flag_content.split("(", 1)[1].rsplit(")", 1)[0]
+    except IndexError:
+        LOGGER.warning("Could not extract email from %r", flag_content)
+        return None
+
+
 def email_to_fas(email, fasjson):
     """Try to get a FAS username from an email address, return None if no FAS username is found"""
     if email.endswith("@fedoraproject.org"):

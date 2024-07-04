@@ -37,27 +37,25 @@ def test_bug_create_schema(fakepublish, bug_create_message, testrelay):
     assert message.product_name == "Fedora"
     assert (
         message.summary
-        == "dgunchev@gmail.com filed a new bug RHBZ#1701391 'SELinux is preventing touch from 'write'...'"
+        == "dgunchev filed a new bug RHBZ#1701391 'SELinux is preventing touch from 'write'...'"
     )
     assert (
         str(message)
-        == "dgunchev@gmail.com filed a new bug RHBZ#1701391 'SELinux is preventing touch from 'write'...'"
+        == "dgunchev filed a new bug RHBZ#1701391 'SELinux is preventing touch from 'write'...'"
     )
     assert message.url == "https://bugzilla.redhat.com/show_bug.cgi?id=1701391"
     assert (
         message.app_icon == "https://bugzilla.redhat.com/extensions/RedHat/web/css/favicon.ico?v=0"
     )
-    assert message.agent_name == "Doncho Gunchev"
-    assert message.app_name == "bugzilla2fedmsg"
-    # broken till we can do email2fas
-    assert message.usernames == []
+    assert message.agent_name == "dgunchev"
+    assert message.app_name == "Bugzilla"
+    assert message.usernames == ["dgunchev", "lv"]
     assert message.packages == ["selinux-policy"]
     assert (
         message.agent_avatar
         == "https://seccdn.libravatar.org/avatar/d4bfc5ec5260361c930aad299c8e14fe03af45109ea88e880a191851b8c83e7f?s=64&d=retro"
     )
     assert message._primary_email == "dgunchev@gmail.com"
-    assert message._all_emails == ["dgunchev@gmail.com", "lvrabec@redhat.com"]
 
 
 def test_bug_modify_schema(fakepublish, bug_modify_message, testrelay):
@@ -71,16 +69,7 @@ def test_bug_modify_schema(fakepublish, bug_modify_message, testrelay):
         message.summary
         == "mhroncok@redhat.com updated 'cc' on RHBZ#1699203 'python-pyramid-1.10.4 is available'"
     )
-    # here we test both picking up an address from a 'cc' change
-    # event, and filtering out lists.fedoraproject.org addresses
-    assert message._all_emails == [
-        "awilliam@redhat.com",
-        "mhroncok@redhat.com",
-        "upstream-release-monitoring@fedoraproject.org",
-    ]
-    # here we test that we can at least derive usernames from
-    # fedoraproject.org email addresses
-    assert message.usernames == ["upstream-release-monitoring"]
+    assert message.usernames == ["adamw", "upstream-release-monitoring"]
 
 
 def test_bug_modify_four_changes_schema(fakepublish, bug_modify_message_four_changes, testrelay):
@@ -99,12 +88,7 @@ def test_bug_modify_four_changes_schema(fakepublish, bug_modify_message_four_cha
         message.summary
         == "zebob.m@gmail.com updated 'assigned_to', 'bug_status', 'cc', and 'flag.needinfo' on RHBZ#1702701 'Review Request: perl-Class-AutoClass - D...'"
     )
-    # this tests gathering an address from a 'needinfo' change
-    assert message._all_emails == [
-        "ppisar@redhat.com",
-        "rob@boberts.com",
-        "zebob.m@gmail.com",
-    ]
+    assert message.usernames == []
 
 
 def test_bug_modify_two_changes_schema(fakepublish, bug_modify_message_four_changes, testrelay):
@@ -146,10 +130,7 @@ def test_bug_modify_no_changes_schema(fakepublish, bug_modify_message, testrelay
         message.summary
         == "mhroncok@redhat.com updated something unknown on RHBZ#1699203 'python-pyramid-1.10.4 is available'"
     )
-    assert message._all_emails == [
-        "mhroncok@redhat.com",
-        "upstream-release-monitoring@fedoraproject.org",
-    ]
+    assert message.usernames == ["upstream-release-monitoring"]
 
 
 def test_comment_create_schema(fakepublish, comment_create_message, testrelay):
@@ -176,7 +157,7 @@ def test_attachment_create_schema(fakepublish, attachment_create_message, testre
     message.validate()
     assert (
         message.summary
-        == "peter@sonniger-tag.eu added attachment on RHBZ#1701353 '[abrt] gnome-software: gtk_widget_unpare...'"
+        == "peter added attachment on RHBZ#1701353 '[abrt] gnome-software: gtk_widget_unpare...'"
     )
 
 
@@ -191,7 +172,7 @@ def test_attachment_modify_schema(fakepublish, attachment_modify_message, testre
     message.validate()
     assert (
         message.summary
-        == "joequant@gmail.com updated 'isobsolete' for attachment on RHBZ#1701766 'I2C_HID_QUIRK_NO_IRQ_AFTER_RESET caused ...'"
+        == "joe updated 'isobsolete' for attachment on RHBZ#1701766 'I2C_HID_QUIRK_NO_IRQ_AFTER_RESET caused ...'"
     )
 
 
@@ -213,7 +194,7 @@ def test_attachment_modify_no_changes_schema(fakepublish, attachment_modify_mess
     message.validate()
     assert (
         message.summary
-        == "joequant@gmail.com updated something unknown for attachment on RHBZ#1701766 'I2C_HID_QUIRK_NO_IRQ_AFTER_RESET caused ...'"
+        == "joe updated something unknown for attachment on RHBZ#1701766 'I2C_HID_QUIRK_NO_IRQ_AFTER_RESET caused ...'"
     )
 
 
