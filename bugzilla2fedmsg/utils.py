@@ -41,7 +41,10 @@ def email_to_fas(email, fasjson):
     """Try to get a FAS username from an email address, return None if no FAS username is found"""
     if email.endswith("@fedoraproject.org"):
         return email.rsplit("@", 1)[0]
+    LOGGER.debug("Looking for a FAS user with rhbzemail = %s", email)
     results = fasjson.search(rhbzemail=email).result
     if len(results) == 1:
+        LOGGER.debug("Found %s", results[0]["username"])
         return results[0]["username"]
+    LOGGER.debug("No match")
     return None
