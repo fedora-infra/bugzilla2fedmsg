@@ -163,13 +163,13 @@ swagger-spec-validator = ">=2.0.1"
 
 [[package]]
 name = "bugzilla2fedmsg-schema"
-version = "1.0.0"
+version = "1.1.0"
 description = "Fedora Messaging schemas for bugzilla2fedmsg"
 optional = false
-python-versions = ">=3.8.10,<4.0.0"
+python-versions = "<4.0.0,>=3.8.10"
 files = [
-    {file = "bugzilla2fedmsg_schema-1.0.0-py3-none-any.whl", hash = "sha256:3362d2c53cf047816533f7b3af276eb4331576cd34a92e4f9a0dc9feae54e58f"},
-    {file = "bugzilla2fedmsg_schema-1.0.0.tar.gz", hash = "sha256:675b007dfac72cb6628e50246d468b0a66c2a4cab15aff9b64279f7653439128"},
+    {file = "bugzilla2fedmsg_schema-1.1.0-py3-none-any.whl", hash = "sha256:69dc885ca95adbbef6388088fa65427a12a8d954e5fa41c0f3b0e3f2b4d4bb91"},
+    {file = "bugzilla2fedmsg_schema-1.1.0.tar.gz", hash = "sha256:f06a2e8a78303c9bdc7c6e568c0f6541dabea7dd4c8387861829c495d3b0d48a"},
 ]
 
 [package.dependencies]
