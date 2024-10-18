@@ -8,9 +8,18 @@ import datetime
 import logging
 
 import pytz
+from dogpile.cache import make_region
 
 
 LOGGER = logging.getLogger(__name__)
+
+cache = make_region()
+
+
+def configure_cache(cache_config):
+    if cache.is_configured:
+        return
+    cache.configure_from_config(cache_config, "")
 
 
 def convert_datetimes(obj):
@@ -51,10 +60,16 @@ def email_to_fas(email, fasjson):
     """Try to get a FAS username from an email address, return None if no FAS username is found"""
     if email.endswith("@fedoraproject.org"):
         return email.rsplit("@", 1)[0]
+
+    @cache.cache_on_arguments()
+    def _fasjson_search(email):
+        results = fasjson.search(rhbzemail=email).result
+        LOGGER.debug("Searching FASJSON with rhbzemail = %s", email)
+        if len(results) == 1:
+            LOGGER.debug("Found %s", results[0]["username"])
+            return results[0]["username"]
+        LOGGER.debug("No match")
+        return None
+
     LOGGER.debug("Looking for a FAS user with rhbzemail = %s", email)
-    results = fasjson.search(rhbzemail=email).result
-    if len(results) == 1:
-        LOGGER.debug("Found %s", results[0]["username"])
-        return results[0]["username"]
-    LOGGER.debug("No match")
-    return None
+    return _fasjson_search(email)

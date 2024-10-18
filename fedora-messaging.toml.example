@@ -42,6 +42,11 @@ certfile = "/my/client/cert.pem"
     # Whether to modify messages to look more like Bugzilla 4 ones did
     bz4compat = true
 
+    [consumer_config.cache]
+    backend = "dogpile.cache.memory"
+    expiration_time = 60
+    arguments = {}
+
 
 [client_properties]
 app = "bugzilla2fedmsg"
