@@ -8,7 +8,7 @@ from fedora_messaging.api import publish
 from fedora_messaging.exceptions import ConnectionException, PublishReturned
 from fedora_messaging.message import INFO
 
-from .utils import convert_datetimes, email_to_fas, needinfo_email
+from .utils import configure_cache, convert_datetimes, email_to_fas, needinfo_email
 
 
 LOGGER = logging.getLogger(__name__)
@@ -57,6 +57,7 @@ class MessageRelay:
         self._allowed_products = self.config.get("bugzilla", {}).get("products", [])
         self._bz4_compat_mode = self.config.get("bugzilla", {}).get("bz4compat", True)
         self._fasjson = FasjsonClient(self.config["fasjson_url"])
+        configure_cache(self.config["cache"])
 
     def on_stomp_message(self, body, headers):
         try:
