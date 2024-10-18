@@ -21,6 +21,7 @@ def testrelay(request, fakefasjson):
         {
             "fasjson_url": "https://fasjson.example.com",
             "bugzilla": {"products": ["Fedora", "Fedora EPEL"], "bz4compat": request.param},
+            "cache": {"backend": "dogpile.cache.null"},
         }
     )
 

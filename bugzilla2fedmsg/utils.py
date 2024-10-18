@@ -8,9 +8,18 @@ import datetime
 import logging
 
 import pytz
+from dogpile.cache import make_region
 
 
 LOGGER = logging.getLogger(__name__)
+
+cache = make_region()
+
+
+def configure_cache(cache_config):
+    if cache.is_configured:
+        return
+    cache.configure_from_config(cache_config, "")
 
 
 def convert_datetimes(obj):
@@ -51,14 +60,20 @@ def email_to_fas(email, fasjson):
     """Try to get a FAS username from an email address, return None if no FAS username is found"""
     if email.endswith("@fedoraproject.org"):
         return email.rsplit("@", 1)[0]
-    LOGGER.debug("Looking for a FAS user with rhbzemail = %s", email)
-    try:
-        results = fasjson.search(rhbzemail=email).result
-    except (ConnectionError, TimeoutError):
-        LOGGER.exception("Could not find a FAS user with rhzemail = %s", email)
+
+    @cache.cache_on_arguments()
+    def _fasjson_search(email):
+        LOGGER.debug("Searching FASJSON with rhbzemail = %s", email)
+        try:
+            results = fasjson.search(rhbzemail=email).result
+        except (ConnectionError, TimeoutError):
+            LOGGER.exception("Could not find a FAS user with rhzemail = %s", email)
+            return None
+        if len(results) == 1:
+            LOGGER.debug("Found %s", results[0]["username"])
+            return results[0]["username"]
+        LOGGER.debug("No match")
         return None
-    if len(results) == 1:
-        LOGGER.debug("Found %s", results[0]["username"])
-        return results[0]["username"]
-    LOGGER.debug("No match")
-    return None
+
+    LOGGER.debug("Looking for a FAS user with rhbzemail = %s", email)
+    return _fasjson_search(email)

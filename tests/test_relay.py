@@ -4,20 +4,36 @@ Authors:    Adam Williamson <awilliam@redhat.com>
 
 """
 
+import logging
+
 import fedora_messaging.exceptions
 import pytest
 
 import bugzilla2fedmsg.relay
+import bugzilla2fedmsg.utils
 
 
 @pytest.fixture
-def testrelay(fakefasjson):
-    return bugzilla2fedmsg.relay.MessageRelay(
-        {
-            "fasjson_url": "https://fasjson.example.com",
-            "bugzilla": {"products": ["Fedora", "Fedora EPEL"]},
-        }
+def test_config(fakefasjson):
+    return {
+        "fasjson_url": "https://fasjson.example.com",
+        "bugzilla": {"products": ["Fedora", "Fedora EPEL"]},
+        "cache": {"backend": "dogpile.cache.null"},
+    }
+
+
+@pytest.fixture
+def testrelay(fakefasjson, test_config):
+    return bugzilla2fedmsg.relay.MessageRelay(test_config)
+
+
+@pytest.fixture
+def real_cache(test_config):
+    bugzilla2fedmsg.utils.cache.configure(
+        backend="dogpile.cache.memory", expiration_time=60, replace_existing_backend=True
     )
+    yield
+    bugzilla2fedmsg.utils.cache.configure(**test_config["cache"], replace_existing_backend=True)
 
 
 def test_bug_create(testrelay, fakepublish, fakefasjson, bug_create_message):
@@ -139,18 +155,14 @@ def test_other_product_drop(testrelay, fakepublish, other_product_message):
 
 
 def test_bz4_compat(
-    testrelay, fakefasjson, fakepublish, bug_create_message, comment_create_message
+    testrelay, test_config, fakefasjson, fakepublish, bug_create_message, comment_create_message
 ):
     """This tests various modifications we make to the bug dict in
     the name of 'backwards compatibility', i.e. making messages
     look more like they did before Bugzilla 5.
     """
-    bz4relay = bugzilla2fedmsg.relay.MessageRelay(
-        {
-            "fasjson_url": "https://fasjson.example.com",
-            "bugzilla": {"products": ["Fedora", "Fedora EPEL"], "bz4compat": True},
-        }
-    )
+    test_config["bugzilla"]["bz4compat"] = True
+    bz4relay = bugzilla2fedmsg.relay.MessageRelay(test_config)
     bz4relay.on_stomp_message(bug_create_message["body"], bug_create_message["headers"])
     assert fakepublish.call_count == 1
     message = fakepublish.call_args[0][0]
@@ -170,18 +182,16 @@ def test_bz4_compat(
     assert message.body["comment"]["author"] == "smooge@redhat.com"
 
 
-def test_bz4_compat_disabled(fakefasjson, fakepublish, bug_create_message, comment_create_message):
+def test_bz4_compat_disabled(
+    test_config, fakefasjson, fakepublish, bug_create_message, comment_create_message
+):
     """Test that we *don't* make Bugzilla 4 compat modifications
     if the option is switched off. Tests only the destructive ones
     as they're the ones we really want to avoid, and if these
     aren't happening it's pretty certain the others aren't either.
     """
-    nobz4relay = bugzilla2fedmsg.relay.MessageRelay(
-        {
-            "fasjson_url": "https://fasjson.example.com",
-            "bugzilla": {"products": ["Fedora", "Fedora EPEL"], "bz4compat": False},
-        }
-    )
+    test_config["bugzilla"]["bz4compat"] = False
+    nobz4relay = bugzilla2fedmsg.relay.MessageRelay(test_config)
     nobz4relay.on_stomp_message(bug_create_message["body"], bug_create_message["headers"])
     assert fakepublish.call_count == 1
     message = fakepublish.call_args[0][0]
@@ -241,3 +251,25 @@ def test_needinfo_bad(testrelay, fakepublish, bug_modify_message_four_changes):
     except IndexError as e:
         pytest.fail(e)
     assert fakepublish.call_count == 1
+
+
+def test_cached_fasjson(
+    test_config,
+    testrelay,
+    real_cache,
+    fakefasjson,
+    fakepublish,
+    bug_create_message,
+    comment_create_message,
+    caplog,
+):
+    caplog.set_level(logging.DEBUG, "bugzilla2fedmsg.utils")
+    testrelay.on_stomp_message(bug_create_message["body"], bug_create_message["headers"])
+    assert fakefasjson.search.call_count == 2
+    assert len([msg for msg in caplog.messages if msg.startswith("Searching FASJSON with")]) == 2
+    caplog.clear()
+    fakefasjson.search.reset_mock()
+    testrelay.on_stomp_message(bug_create_message["body"], bug_create_message["headers"])
+    assert fakefasjson.search.call_count == 0
+    # No "searching" log messages
+    assert len([msg for msg in caplog.messages if msg.startswith("Searching FASJSON with")]) == 0
