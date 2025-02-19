@@ -1,4 +1,4 @@
-""" STOMP consumer that listens to BZ and reproduces to Fedora Messaging.
+"""STOMP consumer that listens to BZ and reproduces to Fedora Messaging.
 
 Authors:    Ralph Bean <rbean@redhat.com>
 

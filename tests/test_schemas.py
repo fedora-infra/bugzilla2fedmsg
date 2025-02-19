@@ -1,4 +1,4 @@
-""" Tests for bugzilla2fedmsg_schemas.
+"""Tests for bugzilla2fedmsg_schemas.
 
 We are basically going to use the relays to construct messages
 just as we do in test_relay, then check the messages validate
