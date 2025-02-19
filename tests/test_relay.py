@@ -1,4 +1,4 @@
-""" Tests for bugzilla2fedmsg.relay.
+"""Tests for bugzilla2fedmsg.relay.
 
 Authors:    Adam Williamson <awilliam@redhat.com>
 

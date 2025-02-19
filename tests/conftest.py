@@ -1,4 +1,4 @@
-""" Test fixtures for bugzilla2fedmsg.relay.
+"""Test fixtures for bugzilla2fedmsg.relay.
 
 Authors:    Adam Williamson <awilliam@redhat.com>
 

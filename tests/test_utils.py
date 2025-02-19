@@ -1,4 +1,4 @@
-""" Tests for bugzilla2fedmsg.utils.
+"""Tests for bugzilla2fedmsg.utils.
 
 Authors:    Aurélien Bompard <abompard@fedoraproject.org>
 
