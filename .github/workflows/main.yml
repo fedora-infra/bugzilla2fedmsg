@@ -24,7 +24,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          dnf install -y pre-commit git rust cargo openssl-devel krb5-devel
+          dnf install -y pre-commit git rust cargo openssl-devel krb5-devel libffi-devel
           pip install poetry>=1.2
 
       - name: Mark the working directory as safe for Git
@@ -49,7 +49,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          dnf install -y libpq-devel krb5-devel
+          dnf install -y libpq-devel krb5-devel libffi-devel
           pip install poetry>=1.2
 
       - name: Mark the working directory as safe for Git
