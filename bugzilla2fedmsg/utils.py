@@ -10,7 +10,6 @@ import logging
 import pytz
 from dogpile.cache import make_region
 
-
 LOGGER = logging.getLogger(__name__)
 
 cache = make_region()

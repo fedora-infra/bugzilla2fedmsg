@@ -10,7 +10,6 @@ from fedora_messaging.message import INFO
 
 from .utils import configure_cache, convert_datetimes, email_to_fas, needinfo_email
 
-
 LOGGER = logging.getLogger(__name__)
 
 

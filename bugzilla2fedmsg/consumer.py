@@ -14,7 +14,6 @@ from stompest.error import StompConnectionError, StompProtocolError
 from stompest.protocol import StompSpec
 from stompest.sync import Stomp
 
-
 LOGGER = logging.getLogger(__name__)
 
 
