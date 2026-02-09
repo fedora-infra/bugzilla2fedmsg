@@ -1,14 +1,8 @@
-"""STOMP consumer that listens to BZ and reproduces to Fedora Messaging.
-
-Authors:    Ralph Bean <rbean@redhat.com>
-
-"""
-
 import datetime
 import logging
 
 import pytz
-from dogpile.cache import make_region
+from dogpile.cache.region import make_region
 
 LOGGER = logging.getLogger(__name__)
 
@@ -23,7 +17,7 @@ def configure_cache(cache_config):
 
 def convert_datetimes(obj):
     """Recursively convert the ISO-8601ish date/time strings we get
-    from stomp to epoch integers (because this is what fedmsg used to
+    from bugzilla to epoch integers (because this is what fedmsg used to
     emit when we sent it datetime instances).
     """
 

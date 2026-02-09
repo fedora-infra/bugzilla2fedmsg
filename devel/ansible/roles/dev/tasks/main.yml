@@ -9,6 +9,8 @@
         - fedora-messaging
         - "@Development Tools"
         - tmux
+        - krb5-devel
+        - python3-packaging
       state: present
 
 - name: install app

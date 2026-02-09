@@ -3,5 +3,6 @@
   become: true
   become_method: sudo
   roles:
-    - rabbitmq
+    - common
+    - kafka
     - dev

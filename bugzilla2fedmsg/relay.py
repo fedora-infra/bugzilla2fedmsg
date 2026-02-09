@@ -1,7 +1,5 @@
-import datetime
 import logging
 
-import pytz
 from bugzilla2fedmsg_schema import MessageV1, MessageV1BZ4
 from fasjson_client import Client as FasjsonClient
 from fedora_messaging.api import publish
@@ -58,18 +56,20 @@ class MessageRelay:
         self._fasjson = FasjsonClient(self.config["fasjson_url"])
         configure_cache(self.config["cache"])
 
-    def on_stomp_message(self, body, headers):
+    def on_kafka_message(self, body):
         try:
-            message_body = self._get_message_body(body, headers)
+            message_body = self._get_message_body(body)
         except DropMessage as e:
             LOGGER.debug(f"DROP: {e}")
             return
 
         topic = "bug.update"
-        if "bug.create" in headers["destination"]:
+        if body["event"]["target"] == "bug" and body["event"]["action"] == "create":
             topic = "bug.new"
 
-        LOGGER.debug("Republishing #%s", message_body["bug"]["id"])
+        LOGGER.debug(
+            "Republishing %s on #%s", body["event"]["routing_key"], message_body["bug"]["id"]
+        )
         messageclass = MessageV1
         if self._bz4_compat_mode:
             messageclass = MessageV1BZ4
@@ -85,7 +85,7 @@ class MessageRelay:
         except ConnectionException as e:
             LOGGER.warning(f"Error sending message {message.id}: {e}")
 
-    def _get_message_body(self, body, headers):
+    def _get_message_body(self, body):
         # in BZ 5.0+, public messages include a key for the 'object',
         # whatever the object is. So 'bug.*' messages have a 'bug'
         # dict...but 'comment.*' messages have a 'comment' dict,
@@ -93,10 +93,8 @@ class MessageRelay:
         # For all non-'bug' objects, this dict has the bug dict within
         # it. See:
         # https://bugzilla.redhat.com/docs/en/html/integrating/api/Bugzilla/Extension/Push.html
-        # destination looks something like
-        # "/topic/VirtualTopic.eng.bugzilla.bug.modify"
         # this splits out the 'bug' part
-        obj = headers["destination"].split("bugzilla.")[1].split(".")[0]
+        obj = body["event"]["target"]
         if obj not in body:
             raise DropMessage("message has no object field. Non public.")
         objdict = {}
@@ -114,11 +112,8 @@ class MessageRelay:
         # it.
         product_name = bug["product"]["name"]
         if product_name not in self._allowed_products:
-            raise DropMessage(f"{product_name!r} not in {self._allowed_products}")
+            raise DropMessage(f"product {product_name!r} not in {self._allowed_products}")
 
-        body["timestamp"] = datetime.datetime.fromtimestamp(
-            int(headers["timestamp"]) / 1000.0, pytz.UTC
-        )
         event = body.get("event")
         event = convert_datetimes(event)
 
@@ -127,7 +122,7 @@ class MessageRelay:
 
         # construct message dict, add the object dict we got earlier
         # (for non-'bug' object messages)
-        body = dict(bug=bug, event=event, headers=headers)
+        body = dict(bug=bug, event=event)
         body.update(objdict)
 
         # user from the event dict: person who triggered the event

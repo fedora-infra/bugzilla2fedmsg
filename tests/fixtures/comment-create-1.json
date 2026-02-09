@@ -1,0 +1,97 @@
+{
+    "event": {
+        "time": "2026-02-04T15:12:53",
+        "change_set": "356743.1770217972.64716",
+        "host": "https://bugzilla.redhat.com/",
+        "action": "create",
+        "user": {
+            "real_name": "Richard W.M. Jones",
+            "id": 123769,
+            "login": "rjones@redhat.com"
+        },
+        "routing_key": "comment.create",
+        "target": "comment",
+        "bug_id": 2436732
+    },
+    "comment": {
+        "bug": {
+            "is_private": false,
+            "cf_last_closed": null,
+            "qa_contact": {
+                "real_name": "Fedora Extras Quality Assurance",
+                "id": 171387,
+                "login": "extras-qa@fedoraproject.org"
+            },
+            "cf_clone_of": "",
+            "component": {
+                "id": 92121,
+                "name": "libguestfs"
+            },
+            "priority": "unspecified",
+            "cf_target_upstream_version": "",
+            "cf_fixed_in": "",
+            "flags": [
+
+            ],
+            "cf_type": "",
+            "cf_story_points": "",
+            "cf_environment": "",
+            "resolution": "",
+            "whiteboard": "",
+            "cf_mount_type": "",
+            "operating_system": "Linux",
+            "cf_documentation_action": "",
+            "cf_embargoed": "",
+            "cf_doc_type": "",
+            "last_change_time": "2026-02-04T15:06:15",
+            "cf_regression_status": "",
+            "reporter": {
+                "id": 402343,
+                "login": "kkoukiou@redhat.com",
+                "real_name": "Katerina Koukiou"
+            },
+            "assigned_to": {
+                "login": "awilliam@redhat.com",
+                "id": 273090,
+                "real_name": "Adam Williamson"
+            },
+            "version": {
+                "id": 7619,
+                "name": "41"
+            },
+            "product": {
+                "id": 49,
+                "name": "Fedora"
+            },
+            "id": 2436732,
+            "url": "",
+            "cf_atomic": "",
+            "classification": "Fedora",
+            "alias": [
+
+            ],
+            "cf_crm": "",
+            "summary": "libguestfs appliance fails to auto-assemble mdraid arrays with non-v1.2 metadata (inside container)",
+            "cf_release_notes": "",
+            "status": {
+                "id": 1,
+                "name": "NEW"
+            },
+            "cf_cloudforms_team": "",
+            "platform": "x86_64",
+            "creation_time": "2026-02-04T15:06:15",
+            "cf_category": "",
+            "keywords": [
+                "Regression"
+            ],
+            "target_milestone": null,
+            "cf_ovirt_team": "",
+            "severity": "high"
+        },
+        "id": 2436732,
+        "is_private": false,
+        "number": 1,
+        "body": "Unclear, does it work outside a container and the problem is something to do with\\nit running inside a container, or does it not work either way?\\n\\nThe error message sort of implies updating to mdadm 4.5, but we don\\'t have that in Fedora\\nyet unfortunately.  It doesn\\'t seem like that is actually the cause however.\\n\\nIf you run virt-rescue can you find a way to assemble the array by hand?",
+        "creation_time": "2026-02-04T15:12:53"
+    }
+}

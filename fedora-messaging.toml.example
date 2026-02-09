@@ -11,29 +11,18 @@ certfile = "/my/client/cert.pem"
 
 [consumer_config]
     fasjson_url = "https://fasjson.fedoraproject.org"
-    [consumer_config.stomp]
-    # Broker URI
-    # http://nikipore.github.io/stompest/protocol.html#stompest.protocol.failover.StompFailoverUri
-    # Example: failover:(tcp://remote1:61615,tcp://localhost:61616)?randomize=false,startupMaxReconnectAttempts=3,initialReconnectDelay=7,maxReconnectDelay=8,maxReconnectAttempts=0
-    uri = "ssl://localhost:61612"
 
-    # Virtual Host
-    vhost = "/"
+    [consumer_config.kafka]
+    # Kafka servers
+    # https://kafka-python.readthedocs.io/en/master/apidoc/KafkaConsumer.html
+    servers = ["localhost:9096"]
 
     # Authentication
-    user = "username"
-    pass = "password"
-    ssl_crt = "/path/to/an/optional.crt"
-    ssl_key = "/path/to/an/optional.key"
+    username = "username"
+    password = "password"
 
-    # Queue to subscribe to
-    queue = "/queue/fedora_from_esb"
-
-    # Heartbeat to keep the connection open
-    heartbeat = 1000
-
-    # How many messages to prefetch
-    prefetch_size = 100
+    # Topics to subscribe to
+    topics = ["dev.ants.engineering.bugzilla.bug"]
 
     [consumer_config.bugzilla]
     # Products to relay messages for - messages for bugs files against

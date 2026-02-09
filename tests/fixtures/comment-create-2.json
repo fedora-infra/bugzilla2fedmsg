@@ -1,0 +1,87 @@
+{
+   "comment" : {
+      "body" : "Description of problem:\\nWhen I attempted to play a downloaded version of https://bugzilla.mozilla.org/attachment.cgi?id=9542371&action=edit, VLC was unable to via Dolphin (but was, via the CLI), and SMPlayer crashed when I attempted to invoke it via Dolphin. I have played similar files, produced by the same software, very recently.\\n\\nVersion-Release number of selected component:\\nsmplayer-25.6.0-2.fc43\\n\\nAdditional info:\\nreporter:       libreport-2.17.15\\ntype:           CCpp\\nreason:         smplayer killed by SIGABRT\\njournald_cursor: s=c1f108f1ef4e48808a377c0a73f168fc;i=131a530;b=0665c30fb64a4bc9b6a7d07859b9bd23;m=37e7ba96f;t=64a00eda354d0;x=e5eff0fbe67375cf\\nexecutable:     /usr/bin/smplayer\\ncmdline:        /usr/bin/smplayer $\\'/home/RokeJulianLockhart/Videos/Screencasts/@{\\'Date\\'=\\'20260204T150552+0000\\'; \\'Type\\\\'=\\\\'Video\\\\'; \\\\'Origin\\\\'=\\\\'.webm\\'\\ncgroup:         0::/user.slice/user-1000.slice/user@1000.service/app.slice/app-smplayer@b6f25a6be6804b5f927246583a31fcde.service\\nrootdir:        /\\nuid:            1000\\nkernel:         6.18.7-200.fc43.x86_64\\npackage:        smplayer-25.6.0-2.fc43\\nrunlevel:       /bin/sh: line 1: runlevel: command not found\\nbacktrace_rating: 4\\ncrash_function: qt_message_fatal\\ncomment:        When I attempted to play a downloaded version of https://bugzilla.mozilla.org/attachment.cgi?id=9542371&action=edit, VLC was unable to via Dolphin (but was, via the CLI), and SMPlayer crashed when I attempted to invoke it via Dolphin. I have played similar files, produced by the same software, very recently.\\n\\nTruncated backtrace:\\nThread no. 1 (11 frames)\\n #4 qt_message_fatal at global/qlogging.cpp:1927\\n #5 QMessageLogger::fatal at global/qlogging.cpp:900\\n #6 init_platform at kernel/qguiapplication.cpp:1254\\n #7 QGuiApplicationPrivate::createPlatformIntegration at kernel/qguiapplication.cpp:1477\\n #8 QGuiApplicationPrivate::createEventDispatcher at kernel/qguiapplication.cpp:1494\\n #9 QCoreApplicationPrivate::init at kernel/qcoreapplication.cpp:835\\n #10 QGuiApplicationPrivate::init at kernel/qguiapplication.cpp:1523\\n #11 QApplicationPrivate::init at kernel/qapplication.cpp:513\\n #12 QApplication::QApplication at kernel/qapplication.cpp:501\\n #13 QtSingleApplication::QtSingleApplication at ../../src/qtsingleapplication.cpp:172\\n #14 MyApplication::MyApplication at /usr/src/debug/smplayer-25.6.0-2.fc43.x86_64/src/myapplication.cpp:50",
+      "bug" : {
+         "alias" : [],
+         "assigned_to" : {
+            "id" : 395391,
+            "login" : "davide@cavalca.name",
+            "real_name" : "Davide Cavalca"
+         },
+         "cf_atomic" : "",
+         "cf_category" : "",
+         "cf_clone_of" : "",
+         "cf_cloudforms_team" : "",
+         "cf_crm" : "",
+         "cf_doc_type" : "",
+         "cf_documentation_action" : "",
+         "cf_embargoed" : "",
+         "cf_environment" : "",
+         "cf_fixed_in" : "",
+         "cf_last_closed" : null,
+         "cf_mount_type" : "",
+         "cf_ovirt_team" : "",
+         "cf_regression_status" : "",
+         "cf_release_notes" : "",
+         "cf_story_points" : "",
+         "cf_target_upstream_version" : "",
+         "cf_type" : "",
+         "classification" : "Fedora",
+         "component" : {
+            "id" : 207913,
+            "name" : "smplayer"
+         },
+         "creation_time" : "2026-02-04T15:14:11",
+         "flags" : [],
+         "id" : 2436734,
+         "is_private" : false,
+         "keywords" : [],
+         "last_change_time" : "2026-02-04T15:14:11",
+         "operating_system" : "Unspecified",
+         "platform" : "x86_64",
+         "priority" : "unspecified",
+         "product" : {
+            "id" : 49,
+            "name" : "Fedora"
+         },
+         "qa_contact" : null,
+         "reporter" : {
+            "id" : 468585,
+            "login" : "8ru2u4gz@rokejulianlockhart.addy.io",
+            "real_name" : "Mr. Beedell, Roke Julian Lockhart (RJLB)"
+         },
+         "resolution" : "",
+         "severity" : "unspecified",
+         "status" : {
+            "id" : 1,
+            "name" : "NEW"
+         },
+         "summary" : "[abrt] smplayer: qt_message_fatal(): smplayer killed by SIGABRT",
+         "target_milestone" : null,
+         "url" : "",
+         "version" : {
+            "id" : 7797,
+            "name" : "43"
+         },
+         "whiteboard" : "abrt_hash:fbc899f1301c3347a9b909cefc8570859a45ec8a;VARIANT_ID=kde;"
+      },
+      "creation_time" : "2026-02-04T15:14:11",
+      "id" : 2436734,
+      "is_private" : false,
+      "number" : 0
+   },
+   "event" : {
+      "action" : "create",
+      "bug_id" : 2436734,
+      "change_set" : "355586.1770218051.07848",
+      "host" : "https://bugzilla.redhat.com/",
+      "routing_key" : "comment.create",
+      "target" : "comment",
+      "time" : "2026-02-04T15:14:11",
+      "user" : {
+         "id" : 468585,
+         "login" : "8ru2u4gz@rokejulianlockhart.addy.io",
+         "real_name" : "Mr. Beedell, Roke Julian Lockhart (RJLB)"
+      }
+   }
+}

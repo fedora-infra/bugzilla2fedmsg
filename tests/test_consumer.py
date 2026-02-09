@@ -1,7 +1,7 @@
+import json
+
 import pytest
-from stompest.error import StompConnectionError, StompProtocolError
-from stompest.protocol import StompSpec
-from stompest.protocol.frame import StompFrame
+from kafka.consumer.fetcher import ConsumerRecord
 
 from bugzilla2fedmsg.consumer import BugzillaConsumer
 
@@ -10,14 +10,11 @@ from bugzilla2fedmsg.consumer import BugzillaConsumer
 def consumer_config():
     return {
         "fasjson_url": "https://fasjson.example.com",
-        "stomp": {
-            "uri": "tcp://localhost:61613",
-            "vhost": "/",
-            "user": "username",
-            "pass": "password",
-            "queue": "/queue/testing",
-            "heartbeat": 1000,
-            "prefetch_size": 100,
+        "kafka": {
+            "servers": ["localhost:9096"],
+            "username": "username",
+            "password": "password",
+            "topics": ["dev.ants.engineering.bugzilla.bug"],
         },
         "bugzilla": {
             "products": ["Fedora", "Fedora EPEL"],
@@ -29,90 +26,67 @@ def consumer_config():
 @pytest.fixture
 def consumer(mocker, consumer_config):
     relay = mocker.Mock(name="relay")
+    kafka_consumer = mocker.Mock(name="kafka_consumer")
+
+    mocker.patch.object(BugzillaConsumer, "_kafka_consumer_class", return_value=kafka_consumer)
     consumer = BugzillaConsumer(consumer_config, relay)
-    # Stop after the first message
-    relay.on_stomp_message.side_effect = lambda *args: consumer.stop()
-    # Setup the transport
-    transport = mocker.Mock(name="transport")
-    transport.messages = []
-
-    def _receive():
-        frame = transport.messages.pop(0)
-        if isinstance(frame, Exception):
-            raise frame
-        return frame
-
-    transport.receive.side_effect = _receive
-    transport_factory = mocker.Mock(name="transport_factory")
-    transport_factory.return_value = transport
-    consumer.stomp._transportFactory = transport_factory
+    consumer.test_messages = []
+    kafka_consumer.__iter__ = mocker.Mock(return_value=iter(consumer.test_messages))
+    kafka_consumer.__next__ = mocker.Mock(side_effect=lambda: next(consumer.test_messages))
     return consumer
 
 
-@pytest.fixture
-def connected_frame():
-    return StompFrame(
-        StompSpec.CONNECTED,
-        {
-            "server": "testing",
-            "heart-beat": "1000,1000",
-            "version": "1.2",
-        },
+def make_record(value):
+    encoded_value = json.dumps(value).encode("utf-8")
+    return ConsumerRecord(
+        topic="dummy.topic",
+        key=b"dummy.key",
+        value=encoded_value,
+        partition=1,
+        offset=1,
+        leader_epoch=0,
+        timestamp=1,
+        timestamp_type=0,
+        headers=[],
+        checksum=0,
+        serialized_header_size=-1,
+        serialized_key_size=1,
+        serialized_value_size=len(encoded_value),
     )
 
 
-@pytest.fixture
-def message_frame():
-    return StompFrame(StompSpec.MESSAGE, {StompSpec.MESSAGE_ID_HEADER: "1312"}, b"true")
-
-
-def test_connect(consumer, connected_frame, message_frame):
-    transport_factory = consumer.stomp._transportFactory
-    transport = transport_factory.return_value
-    transport.messages.append(connected_frame)
-    transport.messages.append(message_frame)
+def test_connect_consume(consumer):
+    dummy_message = {"dummy": "message"}
+    consumer.test_messages.append(make_record(dummy_message))
     consumer.consume()
-    assert transport.connect.call_count == 1
-    assert transport.send.call_count >= 3
-    sent_frames = [call[0][0] for call in transport.send.call_args_list]
-    assert sent_frames[0].command == StompSpec.CONNECT
-    assert sent_frames[1].command == StompSpec.SUBSCRIBE
-    assert sent_frames[1].headers["destination"] == "/queue/testing"
-    assert sent_frames[2].command == StompSpec.ACK
-    assert sent_frames[2].headers["message-id"] == "1312"
+    consumer._kafka_consumer_class.assert_called_once_with(
+        "dev.ants.engineering.bugzilla.bug",
+        bootstrap_servers=["localhost:9096"],
+        group_id="Unknown",
+        sasl_mechanism="SCRAM-SHA-512",
+        sasl_plain_password="password",  # noqa: S106
+        sasl_plain_username="username",
+        security_protocol="SASL_SSL",
+    )
+    consumer.relay.on_kafka_message.assert_called_once_with(dummy_message)
 
 
-def test_connect_twice(consumer, connected_frame, message_frame):
-    transport_factory = consumer.stomp._transportFactory
-    transport = transport_factory.return_value
-    transport.messages.append(connected_frame)
-    transport.messages.append(StompConnectionError("test disconnect"))
-    try:
-        consumer.consume()
-    except StompConnectionError:
-        pass
-    transport.messages.append(connected_frame)
-    transport.messages.append(message_frame)
-    try:
-        consumer.consume()
-    except StompConnectionError as e:
-        pytest.fail(f"Must not fail when already connected: {e}")
+def test_connect_consume_relaying_failed(consumer, caplog):
+    dummy_message = {"dummy": "message"}
+    consumer.test_messages.append(make_record(dummy_message))
+    consumer.relay.on_kafka_message.side_effect = ValueError("dummy error")
+    consumer.consume()
+    consumer.relay.on_kafka_message.assert_called_once()
+    assert caplog.messages == ["Exception when relaying the message:"]
+    assert caplog.records[0].levelname == "ERROR"
 
 
-def test_subscribe_twice(consumer, connected_frame, message_frame):
-    transport_factory = consumer.stomp._transportFactory
-    transport = transport_factory.return_value
-    transport.messages.append(connected_frame)
-    transport.messages.append(StompConnectionError("test disconnect"))
-    try:
-        consumer.consume()
-    except StompConnectionError:
-        pass
-    consumer.stomp._transport = None
-    consumer.stomp.session._state = consumer.stomp.session.DISCONNECTED
-    transport.messages.append(connected_frame)
-    transport.messages.append(message_frame)
-    try:
-        consumer.consume()
-    except StompProtocolError as e:
-        pytest.fail(f"Must not fail when already subscribed: {e}")
+def test_close(consumer):
+    consumer.consume()
+    consumer.stop()
+    consumer._kafka.close.assert_called_once_with()
+
+
+def test_close_before_consume(consumer):
+    consumer.stop()
+    assert not hasattr(consumer, "_kafka")
