@@ -1,10 +1,8 @@
 import logging
 import os
-import time
 
 import click
 import fedora_messaging
-from stompest.error import StompConnectionError
 
 from bugzilla2fedmsg.consumer import BugzillaConsumer
 from bugzilla2fedmsg.relay import MessageRelay
@@ -29,12 +27,8 @@ def cli(config):
     conf = fedora_messaging.config.conf["consumer_config"]
     relay = MessageRelay(conf)
     consumer = BugzillaConsumer(conf, relay)
-    while True:
-        try:
-            consumer.consume()
-        except StompConnectionError:
-            LOGGER.exception("Disconnected: ")
-            time.sleep(3)
-        except KeyboardInterrupt:
-            consumer.stop()
-            raise
+    try:
+        consumer.consume()
+    except KeyboardInterrupt:
+        consumer.stop()
+        raise

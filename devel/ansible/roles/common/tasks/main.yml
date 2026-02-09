@@ -1,0 +1,16 @@
+---
+- name: Copy the disk resize script
+  copy:
+    src: resize-disk.sh
+    dest: /root/resize-disk.sh
+    mode: "755"
+
+- name: Resize the disk
+  command: /root/resize-disk.sh
+
+# Without this, vagrant sshfs can fail when there are many vagrant VMs running at the same time
+- name: allow more auth tries in sshd
+  copy:
+    src: 10-vagrant-maxauthtries.conf
+    dest: /etc/ssh/sshd_config.d/60-vagrant-maxauthtries.conf
+    mode: 0644

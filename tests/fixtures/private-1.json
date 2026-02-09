@@ -1,0 +1,16 @@
+{
+   "event" : {
+      "action" : "modify",
+      "bug_id" : 2437036,
+      "change_set" : "407389.1770288648.97171",
+      "host" : "https://bugzilla.redhat.com/",
+      "routing_key" : "bug.modify",
+      "target" : "bug",
+      "time" : "2026-02-05T10:50:49",
+      "user" : {
+         "id" : 473641,
+         "login" : "bzimport@bot.bugzilla.redhat.com",
+         "real_name" : "OSIDB Bzimport"
+      }
+   }
+}

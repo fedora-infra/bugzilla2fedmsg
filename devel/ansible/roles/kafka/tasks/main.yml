@@ -1,0 +1,12 @@
+---
+- name: Install Podman
+  dnf:
+    name:
+      - podman
+    state: present
+
+- name: Run Kafka
+  containers.podman.podman_container:
+    name: kafka
+    image: docker.io/apache/kafka:latest
+    publish: 9092:9092
