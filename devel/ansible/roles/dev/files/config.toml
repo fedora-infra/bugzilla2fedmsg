@@ -12,27 +12,12 @@ amqp_url = "amqp://"
 [consumer_config]
     fasjson_url = "https://fasjson.tinystage.test"
 
-    [consumer_config.stomp]
-    # Broker URI
-    # http://nikipore.github.io/stompest/protocol.html#stompest.protocol.failover.StompFailoverUri
-    # Example: failover:(tcp://remote1:61615,tcp://localhost:61616)?randomize=false,startupMaxReconnectAttempts=3,initialReconnectDelay=7,maxReconnectDelay=8,maxReconnectAttempts=0
-    uri = "tcp://localhost:61613"
-
-    # Virtual Host
-    vhost = "/"
-
-    # Authentication
-    user = "guest"
-    pass = "guest"
-
-    # Queue to subscribe to
-    queue = "/queue/fedora_from_esb"
-
-    # Heartbeat to keep the connection open
-    heartbeat = 1000
-
-    # How many messages to prefetch
-    prefetch_size = 100
+    [consumer_config.kafka]
+    # Kafka servers
+    # https://kafka-python.readthedocs.io/en/master/apidoc/KafkaConsumer.html
+    servers = ["localhost:9096"]
+    # Topics to subscribe to
+    topics = ["bugzilla.bug"]
 
     [consumer_config.bugzilla]
     # Products to relay messages for - messages for bugs files against

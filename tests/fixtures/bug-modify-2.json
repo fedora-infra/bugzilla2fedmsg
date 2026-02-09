@@ -1,0 +1,95 @@
+{
+   "bug" : {
+      "alias" : [],
+      "assigned_to" : {
+         "id" : 395391,
+         "login" : "davide@cavalca.name",
+         "real_name" : "Davide Cavalca"
+      },
+      "cf_atomic" : "",
+      "cf_category" : "",
+      "cf_clone_of" : "",
+      "cf_cloudforms_team" : "",
+      "cf_crm" : "",
+      "cf_doc_type" : "",
+      "cf_documentation_action" : "",
+      "cf_embargoed" : "",
+      "cf_environment" : "",
+      "cf_fixed_in" : "",
+      "cf_last_closed" : null,
+      "cf_mount_type" : "",
+      "cf_ovirt_team" : "",
+      "cf_regression_status" : "",
+      "cf_release_notes" : "",
+      "cf_story_points" : "",
+      "cf_target_upstream_version" : "",
+      "cf_type" : "",
+      "classification" : "Fedora",
+      "component" : {
+         "id" : 207913,
+         "name" : "smplayer"
+      },
+      "creation_time" : "2026-02-04T15:14:11",
+      "flags" : [],
+      "id" : 2436734,
+      "is_private" : false,
+      "keywords" : [],
+      "last_change_time" : "2026-02-04T15:14:11",
+      "operating_system" : "Unspecified",
+      "platform" : "x86_64",
+      "priority" : "unspecified",
+      "product" : {
+         "id" : 49,
+         "name" : "Fedora"
+      },
+      "qa_contact" : null,
+      "reporter" : {
+         "id" : 468585,
+         "login" : "8ru2u4gz@rokejulianlockhart.addy.io",
+         "real_name" : "Mr. Beedell, Roke Julian Lockhart (RJLB)"
+      },
+      "resolution" : "",
+      "severity" : "unspecified",
+      "status" : {
+         "id" : 1,
+         "name" : "NEW"
+      },
+      "summary" : "[abrt] smplayer: qt_message_fatal(): smplayer killed by SIGABRT",
+      "target_milestone" : null,
+      "url" : "https://retrace.fedoraproject.org/faf/reports/bthash/bacf64afd7b7fd17e523704d8cbafa784ace24e",
+      "version" : {
+         "id" : 7797,
+         "name" : "43"
+      },
+      "whiteboard" : "abrt_hash:fbc899f1301c3347a9b909cefc8570859a45ec8a;VARIANT_ID=kde;"
+   },
+   "event" : {
+      "action" : "modify",
+      "bug_id" : 2436734,
+      "change_set" : "351048.1770218052.82363",
+      "changes" :
+      [
+         {
+            "field": "assigned_to",
+            "removed": "nobody@fedoraproject.org",
+            "added": "zebob.m@gmail.com"
+         },
+         {"field": "bug_status", "removed": "NEW", "added": "POST"},
+         {"field": "cc", "removed": "", "added": "zebob.m@gmail.com"},
+         {
+             "field": "flag.needinfo",
+             "removed": "",
+             "added": "? (rob@boberts.com)"
+         }
+      ],
+      "host" : "https://bugzilla.redhat.com/",
+      "routing_key" : "bug.modify",
+      "target" : "bug",
+      "time" : "2026-02-04T15:14:13",
+      "user": {
+         "login": "zebob.m@gmail.com",
+         "id": 401767,
+         "real_name": "Robert-Andr\u00e9 Mauchin"
+      }
+   }
+}

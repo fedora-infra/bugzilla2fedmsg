@@ -1,0 +1,80 @@
+{
+   "bug" : {
+      "alias" : [],
+      "assigned_to": {
+         "login": "lvrabec@redhat.com",
+         "id": 316673,
+         "real_name": "Lukas Vrabec"
+      },
+      "cf_atomic" : "",
+      "cf_category" : "",
+      "cf_clone_of" : "",
+      "cf_cloudforms_team" : "",
+      "cf_crm" : "",
+      "cf_doc_type" : "",
+      "cf_documentation_action" : "",
+      "cf_embargoed" : "",
+      "cf_environment" : "",
+      "cf_fixed_in" : "",
+      "cf_last_closed" : null,
+      "cf_mount_type" : "",
+      "cf_ovirt_team" : "",
+      "cf_regression_status" : "",
+      "cf_release_notes" : "",
+      "cf_story_points" : "",
+      "cf_target_upstream_version" : "",
+      "cf_type" : "",
+      "classification" : "Fedora",
+      "component" : {
+         "id" : 207913,
+         "name" : "smplayer"
+      },
+      "creation_time" : "2026-02-04T15:14:11",
+      "flags" : [],
+      "id" : 2436734,
+      "is_private" : false,
+      "keywords" : [],
+      "last_change_time" : "2026-02-04T15:14:11",
+      "operating_system" : "Unspecified",
+      "platform" : "x86_64",
+      "priority" : "unspecified",
+      "product" : {
+         "id" : 49,
+         "name" : "Fedora"
+      },
+      "qa_contact" : null,
+      "reporter": {
+         "login": "dgunchev@gmail.com",
+         "id": 156190,
+         "real_name": "Doncho Gunchev"
+      },
+      "resolution" : "",
+      "severity" : "unspecified",
+      "status" : {
+         "id" : 1,
+         "name" : "NEW"
+      },
+      "summary" : "[abrt] smplayer: qt_message_fatal(): smplayer killed by SIGABRT",
+      "target_milestone" : null,
+      "url" : "",
+      "version" : {
+         "id" : 7797,
+         "name" : "43"
+      },
+      "whiteboard" : "abrt_hash:fbc899f1301c3347a9b909cefc8570859a45ec8a;VARIANT_ID=kde;"
+   },
+   "event" : {
+      "action" : "create",
+      "bug_id" : 2436734,
+      "change_set" : "355586.1770218051.13944",
+      "host" : "https://bugzilla.redhat.com/",
+      "routing_key" : "bug.create",
+      "target" : "bug",
+      "time" : "2026-02-04T15:14:11",
+      "user" : {
+         "login": "dgunchev@gmail.com",
+         "id": 156190,
+         "real_name": "Doncho Gunchev"
+      }
+   }
+}

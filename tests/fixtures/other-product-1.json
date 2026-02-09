@@ -1,0 +1,91 @@
+{
+   "comment" : {
+      "body" : "This issue has been addressed in the following products:\\n\\n  Red Hat Enterprise Linux 8.2 Advanced Update Support\\n\\nVia RHSA-2026:2074 https://access.redhat.com/errata/RHSA-2026:2074",
+      "bug" : {
+         "alias" : [
+            "CVE-2026-0882"
+         ],
+         "assigned_to" : {
+            "id" : 377884,
+            "login" : "prodsec-dev@redhat.com",
+            "real_name" : "Product Security DevOps Team"
+         },
+         "cf_atomic" : "",
+         "cf_category" : "",
+         "cf_clone_of" : "",
+         "cf_cloudforms_team" : "",
+         "cf_crm" : "",
+         "cf_doc_type" : "",
+         "cf_documentation_action" : "",
+         "cf_embargoed" : "",
+         "cf_environment" : "",
+         "cf_fixed_in" : "",
+         "cf_last_closed" : null,
+         "cf_mount_type" : "",
+         "cf_ovirt_team" : "",
+         "cf_regression_status" : "",
+         "cf_release_notes" : "A flaw was found in Firefox and Thunderbird. The Mozilla Foundation's Security Advisory describes the following issue:\\r\\nUse-after-free in the IPC component",
+         "cf_story_points" : "",
+         "cf_target_upstream_version" : "",
+         "cf_type" : "",
+         "classification" : "Other",
+         "component" : {
+            "id" : 19979,
+            "name" : "vulnerability"
+         },
+         "creation_time" : "2026-01-13T14:02:16",
+         "flags" : [],
+         "id" : 2428966,
+         "is_private" : false,
+         "keywords" : [
+            "Security"
+         ],
+         "last_change_time" : "2026-02-05T10:47:25",
+         "operating_system" : "Linux",
+         "platform" : "All",
+         "priority" : "high",
+         "product" : {
+            "id" : 88,
+            "name" : "Security Response"
+         },
+         "qa_contact" : null,
+         "reporter" : {
+            "id" : 473641,
+            "login" : "bzimport@bot.bugzilla.redhat.com",
+            "real_name" : "OSIDB Bzimport"
+         },
+         "resolution" : "",
+         "severity" : "high",
+         "status" : {
+            "id" : 1,
+            "name" : "NEW"
+         },
+         "summary" : "CVE-2026-0882 firefox: thunderbird: Use-after-free in the IPC component",
+         "target_milestone" : null,
+         "url" : "",
+         "version" : {
+            "id" : 564,
+            "name" : "unspecified"
+         },
+         "whiteboard" : ""
+      },
+      "creation_time" : "2026-02-05T10:50:49",
+      "id" : 2428966,
+      "is_private" : false,
+      "number" : 19
+   },
+   "event" : {
+      "action" : "create",
+      "bug_id" : 2428966,
+      "change_set" : "407313.1770288648.81185",
+      "host" : "https://bugzilla.redhat.com/",
+      "routing_key" : "comment.create",
+      "target" : "comment",
+      "time" : "2026-02-05T10:50:49",
+      "user" : {
+         "id" : 241731,
+         "login" : "errata-xmlrpc@redhat.com",
+         "real_name" : "errata-xmlrpc"
+      }
+   }
+}

@@ -38,7 +38,7 @@ def real_cache(test_config):
 
 def test_bug_create(testrelay, fakepublish, fakefasjson, bug_create_message):
     """Check correct result for bug.create message."""
-    testrelay.on_stomp_message(bug_create_message["body"], bug_create_message["headers"])
+    testrelay.on_kafka_message(bug_create_message)
     assert fakepublish.call_count == 1
     message = fakepublish.call_args[0][0]
     assert message.topic == "bugzilla.bug.new"
@@ -46,60 +46,57 @@ def test_bug_create(testrelay, fakepublish, fakefasjson, bug_create_message):
     assert message.body["event"]["routing_key"] == "bug.create"
     # this tests convert_datetimes
     createtime = message.body["bug"]["creation_time"]
-    assert createtime == 1555619221.0
+    assert createtime == 1770218051.0
     assert message.body["agent_name"] == "dgunchev"
     assert message.body["usernames"] == ["dgunchev", "lv"]
 
 
 def test_bug_modify(testrelay, fakepublish, bug_modify_message):
     """Check correct result for bug.modify message."""
-    testrelay.on_stomp_message(bug_modify_message["body"], bug_modify_message["headers"])
+    testrelay.on_kafka_message(bug_modify_message)
     assert fakepublish.call_count == 1
     message = fakepublish.call_args[0][0]
     assert message.topic == "bugzilla.bug.update"
     assert "product" in message.body["bug"]
     assert message.body["event"]["routing_key"] == "bug.modify"
     assert message.body["agent_name"] is None
-    assert message.body["usernames"] == ["adamw", "upstream-release-monitoring"]
+    assert message.body["usernames"] == ["adamw", "davide", "upstream-release-monitoring"]
 
 
 def test_comment_create(testrelay, fakepublish, comment_create_message):
     """Check correct result for comment.create message."""
-    testrelay.on_stomp_message(comment_create_message["body"], comment_create_message["headers"])
+    testrelay.on_kafka_message(comment_create_message)
     assert fakepublish.call_count == 1
     message = fakepublish.call_args[0][0]
     assert message.topic == "bugzilla.bug.update"
-    assert message.body["comment"] == {
-        "author": "smooge@redhat.com",
-        "body": "qa09 and qa14 have 8 560 GB SAS drives which are RAID-6 together. \n\nThe systems we get from IBM come through a special contract which in the past required the system to be sent back to add hardware to it. When we added drives it also caused problems because the system didn't match the contract when we returned it. I am checking with IBM on the wearabouts for the systems.",
-        "creation_time": 1555602938.0,
-        "number": 8,
-        "id": 1691487,
-        "is_private": False,
-    }
+    assert message.body["comment"]["author"] == "rjones@redhat.com"
+    assert message.body["comment"]["creation_time"] == 1770217973.0
+    assert message.body["comment"]["number"] == 1
+    assert message.body["comment"]["id"] == 2436732
+    assert message.body["comment"]["is_private"] is False
+    assert message.body["comment"]["body"].startswith("Unclear, does it work outside a container")
+
     # we probably don't need to check these whole things...
     assert "product" in message.body["bug"]
     assert message.body["event"]["routing_key"] == "comment.create"
-    assert message.body["agent_name"] is None
-    assert message.body["usernames"] == ["adamw"]
+    assert message.body["agent_name"] == "rjones"
+    assert message.body["usernames"] == ["adamw", "rjones"]
 
 
 def test_attachment_create(testrelay, fakepublish, attachment_create_message):
     """Check correct result for attachment.create message."""
-    testrelay.on_stomp_message(
-        attachment_create_message["body"], attachment_create_message["headers"]
-    )
+    testrelay.on_kafka_message(attachment_create_message)
     assert fakepublish.call_count == 1
     message = fakepublish.call_args[0][0]
     assert message.topic == "bugzilla.bug.update"
     assert message.body["attachment"] == {
-        "description": "File: var_log_messages",
-        "file_name": "var_log_messages",
+        "description": "File: proc_pid_status",
+        "file_name": "proc_pid_status",
         "is_patch": False,
-        "creation_time": 1555610511.0,
-        "id": 1556193,
+        "creation_time": 1770218054.0,
+        "id": 2128166,
         "flags": [],
-        "last_change_time": 1555610511.0,
+        "last_change_time": 1770218054.0,
         "content_type": "text/plain",
         "is_obsolete": False,
         "is_private": False,
@@ -108,39 +105,37 @@ def test_attachment_create(testrelay, fakepublish, attachment_create_message):
     assert "product" in message.body["bug"]
     assert message.body["event"]["routing_key"] == "attachment.create"
     assert message.body["agent_name"] == "peter"
-    assert message.body["usernames"] == ["peter"]
+    assert message.body["usernames"] == ["davide", "peter"]
 
 
 def test_attachment_modify(testrelay, fakepublish, attachment_modify_message):
     """Check correct result for attachment.modify message."""
-    testrelay.on_stomp_message(
-        attachment_modify_message["body"], attachment_modify_message["headers"]
-    )
+    testrelay.on_kafka_message(attachment_modify_message)
     assert fakepublish.call_count == 1
     message = fakepublish.call_args[0][0]
     assert message.topic == "bugzilla.bug.update"
     assert message.body["attachment"] == {
-        "description": "patch to turn off reset quirk for SP1064 touch pad",
-        "file_name": "kernel-diff.patch",
-        "is_patch": True,
-        "creation_time": 1556149017.0,
-        "id": 1558429,
+        "description": "File: maps",
+        "file_name": "maps",
+        "is_patch": False,
+        "creation_time": 1770218056.0,
+        "id": 2128167,
         "flags": [],
-        "last_change_time": 1556149017.0,
+        "last_change_time": 1770218056.0,
         "content_type": "text/plain",
-        "is_obsolete": True,
+        "is_obsolete": False,
         "is_private": False,
     }
     # we probably don't need to check these whole things...
     assert "product" in message.body["bug"]
     assert message.body["event"]["routing_key"] == "attachment.modify"
     assert message.body["agent_name"] == "joe"
-    assert message.body["usernames"] == ["joe"]
+    assert message.body["usernames"] == ["davide", "joe"]
 
 
 def test_private_drop(testrelay, fakepublish, private_message):
     """Check that we drop (don't publish) a private message."""
-    testrelay.on_stomp_message(private_message["body"], private_message["headers"])
+    testrelay.on_kafka_message(private_message)
     assert fakepublish.call_count == 0
 
 
@@ -150,7 +145,7 @@ def test_other_product_drop(testrelay, fakepublish, other_product_message):
     config, the products we care about are the defaults: 'Fedora'
     and 'Fedora EPEL'.
     """
-    testrelay.on_stomp_message(other_product_message["body"], other_product_message["headers"])
+    testrelay.on_kafka_message(other_product_message)
     assert fakepublish.call_count == 0
 
 
@@ -163,23 +158,23 @@ def test_bz4_compat(
     """
     test_config["bugzilla"]["bz4compat"] = True
     bz4relay = bugzilla2fedmsg.relay.MessageRelay(test_config)
-    bz4relay.on_stomp_message(bug_create_message["body"], bug_create_message["headers"])
+    bz4relay.on_kafka_message(bug_create_message)
     assert fakepublish.call_count == 1
     message = fakepublish.call_args[0][0]
     assert message.body["bug"]["assigned_to"] == "lvrabec@redhat.com"
-    assert message.body["bug"]["component"] == "selinux-policy"
+    assert message.body["bug"]["component"] == "smplayer"
     assert message.body["bug"]["product"] == "Fedora"
     assert message.body["bug"]["cc"] == []
     assert message.body["bug"]["creator"] == "dgunchev@gmail.com"
     assert message.body["bug"]["op_sys"] == "Unspecified"
     assert message.body["event"]["who"] == "dgunchev@gmail.com"
-    assert message.body["bug"]["weburl"] == "https://bugzilla.redhat.com/show_bug.cgi?id=1701391"
+    assert message.body["bug"]["weburl"] == "https://bugzilla.redhat.com/show_bug.cgi?id=2436734"
     # we need a comment message to test this
     fakepublish.reset_mock()
-    testrelay.on_stomp_message(comment_create_message["body"], comment_create_message["headers"])
+    testrelay.on_kafka_message(comment_create_message)
     assert fakepublish.call_count == 1
     message = fakepublish.call_args[0][0]
-    assert message.body["comment"]["author"] == "smooge@redhat.com"
+    assert message.body["comment"]["author"] == "rjones@redhat.com"
 
 
 def test_bz4_compat_disabled(
@@ -192,7 +187,7 @@ def test_bz4_compat_disabled(
     """
     test_config["bugzilla"]["bz4compat"] = False
     nobz4relay = bugzilla2fedmsg.relay.MessageRelay(test_config)
-    nobz4relay.on_stomp_message(bug_create_message["body"], bug_create_message["headers"])
+    nobz4relay.on_kafka_message(bug_create_message)
     assert fakepublish.call_count == 1
     message = fakepublish.call_args[0][0]
     assert all(item in message.body["bug"]["assigned_to"] for item in ("login", "id", "real_name"))
@@ -206,7 +201,7 @@ def test_publish_exception_publishreturned(testrelay, fakepublish, bug_create_me
     """
     fakepublish.side_effect = fedora_messaging.exceptions.PublishReturned("oops!")
     # this should not raise any exception
-    testrelay.on_stomp_message(bug_create_message["body"], bug_create_message["headers"])
+    testrelay.on_kafka_message(bug_create_message)
     assert fakepublish.call_count == 1
     # check the logging worked
     assert "Fedora Messaging broker rejected message" in caplog.text
@@ -219,37 +214,33 @@ def test_publish_exception_connectionexception(testrelay, fakepublish, bug_creat
     # First test PublishReturned
     fakepublish.side_effect = fedora_messaging.exceptions.ConnectionException("oops!")
     # this should not raise any exception
-    testrelay.on_stomp_message(bug_create_message["body"], bug_create_message["headers"])
+    testrelay.on_kafka_message(bug_create_message)
     assert fakepublish.call_count == 1
     # check the logging worked
     assert "Error sending message" in caplog.text
 
 
 def test_needinfo_removed(testrelay, fakepublish, bug_modify_message_four_changes):
-    bug_modify_message_four_changes["body"]["event"]["changes"][2] = {
+    bug_modify_message_four_changes["event"]["changes"][2] = {
         "field": "cc",
         "removed": "",
         "added": "awilliam@redhat.com",
     }
-    bug_modify_message_four_changes["body"]["event"]["changes"][3]["added"] = ""
-    testrelay.on_stomp_message(
-        bug_modify_message_four_changes["body"], bug_modify_message_four_changes["headers"]
-    )
+    bug_modify_message_four_changes["event"]["changes"][3]["added"] = ""
+    testrelay.on_kafka_message(bug_modify_message_four_changes)
     assert fakepublish.call_count == 1
     message = fakepublish.call_args[0][0]
     assert message.body["agent_name"] is None
-    assert message.body["usernames"] == ["adamw"]
+    assert message.body["usernames"] == ["adamw", "davide"]
 
 
 def test_needinfo_bad(testrelay, fakepublish, bug_modify_message_four_changes):
-    last_change = bug_modify_message_four_changes["body"]["event"]["changes"][3]
+    last_change = bug_modify_message_four_changes["event"]["changes"][3]
     last_change["added"] = "some garbage"
     try:
-        testrelay.on_stomp_message(
-            bug_modify_message_four_changes["body"], bug_modify_message_four_changes["headers"]
-        )
+        testrelay.on_kafka_message(bug_modify_message_four_changes)
     except IndexError as e:
-        pytest.fail(e)
+        pytest.fail(str(e))
     assert fakepublish.call_count == 1
 
 
@@ -264,12 +255,12 @@ def test_cached_fasjson(
     caplog,
 ):
     caplog.set_level(logging.DEBUG, "bugzilla2fedmsg.utils")
-    testrelay.on_stomp_message(bug_create_message["body"], bug_create_message["headers"])
+    testrelay.on_kafka_message(bug_create_message)
     assert fakefasjson.search.call_count == 2
     assert len([msg for msg in caplog.messages if msg.startswith("Searching FASJSON with")]) == 2
     caplog.clear()
     fakefasjson.search.reset_mock()
-    testrelay.on_stomp_message(bug_create_message["body"], bug_create_message["headers"])
+    testrelay.on_kafka_message(bug_create_message)
     assert fakefasjson.search.call_count == 0
     # No "searching" log messages
     assert len([msg for msg in caplog.messages if msg.startswith("Searching FASJSON with")]) == 0
