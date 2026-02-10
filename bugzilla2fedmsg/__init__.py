@@ -2,7 +2,8 @@ import logging
 import os
 
 import click
-import fedora_messaging
+from fedora_messaging.config import conf as fm_config
+from fedora_messaging.exceptions import ConfigurationException
 
 from bugzilla2fedmsg.consumer import BugzillaConsumer
 from bugzilla2fedmsg.relay import MessageRelay
@@ -18,13 +19,13 @@ def cli(config):
         if not os.path.isfile(config):
             raise click.exceptions.BadParameter(f"{config} is not a file")
         try:
-            fedora_messaging.config.conf.load_config(config_path=config)
-        except fedora_messaging.exceptions.ConfigurationException as e:
+            fm_config.load_config(config_path=config)
+        except ConfigurationException as e:
             raise click.exceptions.BadParameter(str(e)) from e
-    fedora_messaging.config.conf.setup_logging()
+    fm_config.setup_logging()
 
     # Now start the consumer.
-    conf = fedora_messaging.config.conf["consumer_config"]
+    conf = fm_config["consumer_config"]
     relay = MessageRelay(conf)
     consumer = BugzillaConsumer(conf, relay)
     try:
