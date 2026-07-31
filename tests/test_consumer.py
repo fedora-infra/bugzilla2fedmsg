@@ -62,7 +62,7 @@ def test_connect_consume(consumer):
     consumer._kafka_consumer_class.assert_called_once_with(
         "dev.ants.engineering.bugzilla.bug",
         bootstrap_servers=["localhost:9096"],
-        group_id="Unknown",
+        group_id="Example Application",
         sasl_mechanism="SCRAM-SHA-512",
         sasl_plain_password="password",  # noqa: S106
         sasl_plain_username="username",
