@@ -52,7 +52,11 @@ def email_to_fas(email, fasjson):
     if email.endswith("@fedoraproject.org"):
         return email.rsplit("@", 1)[0]
     LOGGER.debug("Looking for a FAS user with rhbzemail = %s", email)
-    results = fasjson.search(rhbzemail=email).result
+    try:
+        results = fasjson.search(rhbzemail=email).result
+    except (ConnectionError, TimeoutError):
+        LOGGER.exception("Could not find a FAS user with rhzemail = %s", email)
+        return None
     if len(results) == 1:
         LOGGER.debug("Found %s", results[0]["username"])
         return results[0]["username"]
