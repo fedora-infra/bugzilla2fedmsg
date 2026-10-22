@@ -2,6 +2,7 @@ import json
 
 import pytest
 from kafka.consumer.fetcher import ConsumerRecord
+from kafka.errors import CommitFailedError
 
 from bugzilla2fedmsg.consumer import BugzillaConsumer
 
@@ -36,14 +37,14 @@ def consumer(mocker, consumer_config):
     return consumer
 
 
-def make_record(value):
-    encoded_value = json.dumps(value).encode("utf-8")
+def make_record(value, key=b"dummy.key", offset=1):
+    encoded_value = value if isinstance(value, bytes) else json.dumps(value).encode("utf-8")
     return ConsumerRecord(
         topic="dummy.topic",
-        key=b"dummy.key",
+        key=key,
         value=encoded_value,
         partition=1,
-        offset=1,
+        offset=offset,
         leader_epoch=0,
         timestamp=1,
         timestamp_type=0,
@@ -67,8 +68,41 @@ def test_connect_consume(consumer):
         sasl_plain_password="password",  # noqa: S106
         sasl_plain_username="username",
         security_protocol="SASL_SSL",
+        enable_auto_commit=False,
+        max_poll_records=10,
     )
     consumer.relay.on_kafka_message.assert_called_once_with(dummy_message)
+
+
+def test_commit_after_each_message(consumer):
+    consumer.test_messages.extend(
+        [make_record({"dummy": "message"}, offset=offset) for offset in range(3)]
+    )
+    consumer.consume()
+    assert consumer.relay.on_kafka_message.call_count == 3
+    assert consumer._kafka.commit.call_count == 3
+
+
+def test_commit_failed(consumer, caplog):
+    consumer.test_messages.append(make_record({"dummy": "message"}))
+    consumer._kafka_consumer_class.return_value.commit.side_effect = CommitFailedError(
+        "dummy error"
+    )
+    consumer.consume()
+    consumer.relay.on_kafka_message.assert_called_once()
+    assert caplog.messages == ["Could not commit the offset: CommitFailedError: dummy error"]
+    assert caplog.records[0].levelname == "WARNING"
+
+
+def test_undecodable_message(consumer, caplog):
+    # A message we can't even parse must not kill the process, or we would read it again
+    # on every restart.
+    consumer.test_messages.append(make_record(b"not json", key=None))
+    consumer.consume()
+    consumer.relay.on_kafka_message.assert_not_called()
+    consumer._kafka.commit.assert_called_once_with()
+    assert caplog.messages == ["Could not decode the message, dropping it:"]
+    assert caplog.records[0].levelname == "ERROR"
 
 
 def test_connect_consume_relaying_failed(consumer, caplog):

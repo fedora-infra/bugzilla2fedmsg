@@ -9,8 +9,19 @@ import logging
 
 from fedora_messaging.config import conf as fm_config
 from kafka import KafkaConsumer
+from kafka.errors import CommitFailedError
 
 LOGGER = logging.getLogger(__name__)
+
+# Relaying a message can be slow: it does an HTTP request to FASJSON for every email
+# address involved, and then publishes to RabbitMQ. With the default settings, Kafka
+# would hand us batches of 500 records and only commit the offsets when we ask for the
+# next batch, so a crash or a rebalance in the meantime would make the broker send us
+# the whole batch again. Instead, ask for small batches and commit after each message.
+KAFKA_OPTIONS = {
+    "enable_auto_commit": False,
+    "max_poll_records": 10,
+}
 
 
 class BugzillaConsumer:
@@ -30,6 +41,7 @@ class BugzillaConsumer:
         kwargs = dict(
             group_id=fm_config["client_properties"]["app"],
             bootstrap_servers=self._conf["kafka"]["servers"],
+            **KAFKA_OPTIONS,
         )
         if self._conf["kafka"].get("username") and self._conf["kafka"].get("password"):
             kwargs.update(
@@ -47,16 +59,36 @@ class BugzillaConsumer:
         self._connect()
         LOGGER.info("Kafka consumer is ready")
         for message in self._kafka:
-            body = json.loads(message.value.decode("utf-8"))
-            LOGGER.debug(
-                f"Received message from Kafka on topic {message.topic}, "
-                f"partition {message.partition}, offset {message.offset} "
-                f"with key {message.key.decode('ascii')}"
-            )
+            self._handle_message(message)
+            # This is at-least-once delivery: committing after the message has been
+            # relayed means we may relay it twice if we're interrupted right now, but
+            # the window is a single message instead of a whole batch.
             try:
-                self.relay.on_kafka_message(body)
-            except Exception:
-                LOGGER.exception("Exception when relaying the message:")
+                self._kafka.commit()
+            except CommitFailedError as e:
+                # The group has rebalanced and the partition is somebody else's problem
+                # now, they will relay the message again.
+                LOGGER.warning(f"Could not commit the offset: {e}")
+
+    def _handle_message(self, message):
+        LOGGER.debug(
+            "Received message from Kafka on topic %s, partition %s, offset %s with key %r",
+            message.topic,
+            message.partition,
+            message.offset,
+            message.key,
+        )
+        try:
+            body = json.loads(message.value.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            # Don't let an unparsable message kill the process: we would just read it
+            # again on restart, and again, and again.
+            LOGGER.exception("Could not decode the message, dropping it:")
+            return
+        try:
+            self.relay.on_kafka_message(body)
+        except Exception:
+            LOGGER.exception("Exception when relaying the message:")
 
     def stop(self):
         if hasattr(self, "_kafka") and self._kafka:
