@@ -3,6 +3,7 @@ import logging
 
 import pytz
 from dogpile.cache.region import make_region
+from fasjson_client.errors import APIError
 
 LOGGER = logging.getLogger(__name__)
 
@@ -57,11 +58,7 @@ def email_to_fas(email, fasjson):
     @cache.cache_on_arguments()
     def _fasjson_search(email):
         LOGGER.debug("Searching FASJSON with rhbzemail = %s", email)
-        try:
-            results = fasjson.search(rhbzemail=email).result
-        except (ConnectionError, TimeoutError):
-            LOGGER.exception("Could not find a FAS user with rhzemail = %s", email)
-            return None
+        results = fasjson.search(rhbzemail=email).result
         if len(results) == 1:
             LOGGER.debug("Found %s", results[0]["username"])
             return results[0]["username"]
@@ -69,4 +66,13 @@ def email_to_fas(email, fasjson):
         return None
 
     LOGGER.debug("Looking for a FAS user with rhbzemail = %s", email)
-    return _fasjson_search(email)
+    try:
+        return _fasjson_search(email)
+    except (APIError, OSError):
+        # Errors are caught outside of the cached function: letting them propagate out
+        # of it means that the failure won't be cached as if the user did not exist, and
+        # the lookup will be retried on the next message.
+        # FASJSON reports HTTP errors as APIError, and the network errors raised by
+        # bravado and requests are all OSError subclasses.
+        LOGGER.exception("Could not look up the FAS user with rhbzemail = %s", email)
+        return None
